@@ -1,0 +1,552 @@
+/* ============================================
+   SISTEMA DE PAINEL DE SENHAS - HOSPITAL
+   Estilos Customizados
+   ============================================ */
+
+/* ============= CONFIGURAÇÕES GERAIS ============= */
+:root {
+    --cor-vermelho: #dc3545;
+    --cor-laranja: #fd7e14;
+    --cor-amarelo: #ffc107;
+    --cor-verde: #28a745;
+    --cor-azul: #007bff;
+    --cor-primary: #0d6efd;
+    --cor-success: #198754;
+    --cor-danger: #dc3545;
+    --cor-indigo: #4f46e5;
+    --sombra-card: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Módulo Administrativo - Índigo */
+.bg-indigo {
+    background-color: var(--cor-indigo) !important;
+}
+.btn-indigo {
+    color: #fff;
+    background-color: var(--cor-indigo);
+    border-color: var(--cor-indigo);
+}
+.btn-indigo:hover {
+    color: #fff;
+    background-color: #4338ca;
+    border-color: #4338ca;
+}
+.btn-outline-indigo {
+    color: var(--cor-indigo);
+    border-color: var(--cor-indigo);
+}
+.btn-outline-indigo:hover {
+    color: #fff;
+    background-color: var(--cor-indigo);
+    border-color: var(--cor-indigo);
+}
+.text-indigo { color: var(--cor-indigo) !important; }
+.border-indigo { border-color: var(--cor-indigo) !important; }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* ============= PÁGINA INICIAL (INDEX) ============= */
+.module-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.module-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+.module-icon {
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.module-card:hover .module-icon {
+    transform: scale(1.1);
+}
+
+/* ============= ENCAMINHAR PARA TRIAGEM ============= */
+.encaminhar-triagem-box {
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
+    border: 2px solid #339af0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.encaminhar-triagem-box:hover {
+    background: linear-gradient(135deg, #d0ebff 0%, #a5d8ff 100%);
+    box-shadow: 0 4px 12px rgba(51, 154, 240, 0.3);
+    transform: scale(1.01);
+}
+
+.encaminhar-triagem-box .form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+}
+
+.encaminhar-triagem-box .form-check-label {
+    font-size: 1.05rem;
+    color: #1971c2;
+}
+
+/* ============= CLASSIFICAÇÃO DE RISCO ============= */
+.classificacao-risco {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.classificacao-item {
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.classificacao-item:hover {
+    transform: scale(1.02);
+    box-shadow: var(--sombra-card);
+}
+
+.classificacao-item input[type="radio"]:checked + label {
+    font-weight: bold;
+}
+
+.risco-vermelho {
+    background-color: #f8d7da;
+    border-color: var(--cor-vermelho);
+}
+
+.risco-vermelho input[type="radio"]:checked + label {
+    color: var(--cor-vermelho);
+}
+
+.risco-laranja {
+    background-color: #ffe0b2;
+    border-color: var(--cor-laranja);
+}
+
+.risco-laranja input[type="radio"]:checked + label {
+    color: var(--cor-laranja);
+}
+
+.risco-amarelo {
+    background-color: #fff59d;
+    border-color: var(--cor-amarelo);
+}
+
+.risco-amarelo input[type="radio"]:checked + label {
+    color: #856404;
+}
+
+.risco-verde {
+    background-color: #c8e6c9;
+    border-color: var(--cor-verde);
+}
+
+.risco-verde input[type="radio"]:checked + label {
+    color: var(--cor-verde);
+}
+
+.risco-azul {
+    background-color: #bbdefb;
+    border-color: var(--cor-azul);
+}
+
+.risco-azul input[type="radio"]:checked + label {
+    color: var(--cor-azul);
+}
+
+/* ============= SENHAS GERADAS (LISTA) ============= */
+.senha-item {
+    padding: 15px;
+    border-left: 4px solid;
+    background-color: #fff;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.senha-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.senha-item.classificacao-1 { border-left-color: var(--cor-vermelho); }
+.senha-item.classificacao-2 { border-left-color: var(--cor-laranja); }
+.senha-item.classificacao-3 { border-left-color: var(--cor-amarelo); }
+.senha-item.classificacao-4 { border-left-color: var(--cor-verde); }
+.senha-item.classificacao-5 { border-left-color: var(--cor-azul); }
+
+.senha-numero {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--cor-primary);
+}
+
+/* ============= MODAL DE SENHA GERADA ============= */
+.senha-gerada-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.senha-gerada-display h1 {
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============= CONSULTÓRIO - PRÓXIMO PACIENTE ============= */
+.proximo-paciente-card {
+    border: 3px solid var(--cor-warning);
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: #ffc107; }
+    50% { border-color: #ff9800; }
+}
+
+.senha-display {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.senha-display h1 {
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+/* ============= TABELA DE FILA ============= */
+.table-hover tbody tr {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e9ecef;
+    transform: scale(1.01);
+}
+
+.badge-classificacao {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+}
+
+.badge-vermelho {
+    background-color: var(--cor-vermelho);
+    color: white;
+}
+
+.badge-laranja {
+    background-color: var(--cor-laranja);
+    color: white;
+}
+
+.badge-amarelo {
+    background-color: var(--cor-amarelo);
+    color: #000;
+}
+
+.badge-verde {
+    background-color: var(--cor-verde);
+    color: white;
+}
+
+.badge-azul {
+    background-color: var(--cor-azul);
+    color: white;
+}
+
+/* ============= HISTÓRICO DE CHAMADAS ============= */
+.list-group-item-chamada {
+    border-left: 3px solid var(--cor-success);
+    font-size: 0.9rem;
+    padding: 8px 12px;
+}
+
+/* ============= PAINEL DE TV ============= */
+.painel-tv-body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.painel-header {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.relogio-painel {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.data-painel {
+    font-size: 0.9rem;
+}
+
+/* ============= CHAMADA ATUAL (PAINEL TV) ============= */
+.chamada-atual-card {
+    border: 5px solid var(--cor-danger);
+    animation: pulse-card 2s infinite;
+    min-height: 600px;
+}
+
+@keyframes pulse-card {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(220, 53, 69, 0.8);
+    }
+}
+
+.senha-chamada-display {
+    animation: zoomIn 1s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.nome-paciente-display {
+    color: #333;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.classificacao-badge {
+    font-size: 1.5rem;
+    padding: 10px 30px;
+    border-radius: 25px;
+}
+
+.consultorio-numero {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.consultorio-numero h1 {
+    color: #fff;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+/* ============= OVERLAY DE CHAMADA ============= */
+.chamada-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(220, 53, 69, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.5s ease;
+}
+
+.chamada-overlay.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.chamada-overlay-content {
+    text-align: center;
+    animation: bounceIn 1s ease;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ============= MENSAGEM RODAPÉ ============= */
+.mensagem-rodape {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: var(--sombra-card);
+    animation: slide-up 1s ease;
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============= CONTROLES DO PAINEL ============= */
+.controles-painel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.controles-content {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+/* ============= ANIMAÇÕES GERAIS ============= */
+.animate-entrada {
+    animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============= LOADING / SPINNER ============= */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-border-custom {
+    width: 5rem;
+    height: 5rem;
+    border-width: 0.5rem;
+}
+
+/* ============= UTILITÁRIOS ============= */
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card-shadow {
+    box-shadow: var(--sombra-card);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* ============= RESPONSIVIDADE ============= */
+@media (max-width: 768px) {
+    .senha-chamada-display h1 {
+        font-size: 4rem;
+    }
+    
+    .consultorio-numero h1 {
+        font-size: 3rem;
+    }
+    
+    .relogio-painel {
+        font-size: 1.5rem;
+    }
+    
+    .module-icon i {
+        font-size: 3rem !important;
+    }
+}
+
+/* ============= IMPRESSÃO ============= */
+@media print {
+    .navbar, .btn, footer, .controles-painel {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ============= ACESSIBILIDADE ============= */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    outline: 3px solid rgba(13, 110, 253, 0.5);
+    outline-offset: 2px;
+}
+
+/* ============= SCROLL CUSTOMIZADO ============= */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
