@@ -30,9 +30,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <?php echo $content; ?>
-    </div>
+    <?php echo $content; ?>
 
     <footer class="text-center mt-5 mb-3 text-muted">
         <p>&copy; <?php echo date('Y'); ?> Sistema de Painel de Senhas - Todos os direitos reservados</p>

@@ -73,7 +73,7 @@
 
 						<!-- Módulo Administrativo -->
 						<div class="col">
-							<div class="card module-card h-100 border-indigo" onclick="window.location.href='<?php echo base_url('administrativo'); ?>'">
+							<div class="card module-card h-100 border-indigo" onclick="window.location.href='administrativo.html'">
 								<div class="card-body text-center py-3">
 									<div class="module-icon mb-2">
 										<i class="fas fa-cog fa-4x text-indigo"></i>
