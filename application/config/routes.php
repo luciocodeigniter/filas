@@ -56,7 +56,11 @@ $route['translate_uri_dashes'] = FALSE;
 // Administrativo
 $route['administrativo'] = 'Administrativo/index';
 $route['administrativo/municipios'] = 'Municipios/index';
+$route['administrativo/unidades'] = 'Unidades/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
 $route['api/municipios/(:num)'] = 'api/municipios/show/$1';
+
+$route['api/unidades'] = 'api/unidades/index';
+$route['api/unidades/(:num)'] = 'api/unidades/show/$1';

@@ -424,6 +424,3 @@ function imprimirSenha() {
     window.print();
 }
 
-// ============= CONSOLE LOG =============
-console.log('Sistema de Painel de Senhas carregado com sucesso!');
-console.log('Dados mockados disponíveis:', dadosMockados);

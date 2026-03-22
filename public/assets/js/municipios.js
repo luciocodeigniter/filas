@@ -89,7 +89,7 @@ $(document).ready(function () {
         try {
             await apiRequest(`${API_URL}/delete/${municipioParaExcluir.id}`, 'DELETE');
 
-            exibirNotificacao('Município excluído com sucesso!', 'success');
+            exibirNotificacao('Sucesso!', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalExcluir')).hide();
             municipioParaExcluir = null;
 

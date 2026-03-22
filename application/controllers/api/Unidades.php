@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Municipios extends CI_Controller
+class Unidades extends CI_Controller
 {
     public function __construct()
     {
@@ -16,16 +16,16 @@ class Municipios extends CI_Controller
             exit(0);
         }
 
-        $this->load->model('Municipio_model');
+        $this->load->model('Unidade_model');
     }
 
     /**
-     * GET /api/municipios
+     * GET /api/unidades
      */
     public function index()
     {
         try {
-            $data = $this->Municipio_model->getAll();
+            $data = $this->Unidade_model->getAll();
             echo json_encode($data);
         } catch (Exception $e) {
             http_response_code(500);
@@ -34,12 +34,12 @@ class Municipios extends CI_Controller
     }
 
     /**
-     * GET /api/municipios/{id}
+     * GET /api/unidades/{id}
      */
     public function show($id)
     {
         try {
-            $data = $this->Municipio_model->getById($id);
+            $data = $this->Unidade_model->getById($id);
             echo json_encode($data);
         } catch (Exception $e) {
             http_response_code(500);
@@ -48,7 +48,7 @@ class Municipios extends CI_Controller
     }
 
     /**
-     * POST /api/municipios/create
+     * POST /api/unidades/create
      */
     public function create()
     {
@@ -61,12 +61,12 @@ class Municipios extends CI_Controller
                 return;
             }
 
-            $id = $this->Municipio_model->insert([
-                'nome'       => $input['nome'],
-                'secretaria' => $input['secretaria'] ?? null,
-                'telefone'   => $input['telefone'] ?? null,
-                'logo'       => empty($input['logo']) ? null : $input['logo'],
-                'ativo'      => $input['ativo'] ? 1 : 0
+            $id = $this->Unidade_model->insert([
+                'nome'         => $input['nome'],
+                'municipio_id' => $input['municipio_id'] ?? null,
+                'telefone'     => $input['telefone'] ?? null,
+                'email'        => $input['email'] ?? null,
+                'ativo'        => $input['ativo'] ? 1 : 0
             ]);
 
             echo json_encode([
@@ -80,7 +80,7 @@ class Municipios extends CI_Controller
     }
 
     /**
-     * PUT /api/municipios/update/{id}
+     * PUT /api/unidades/{id}
      */
     public function update($id)
     {
@@ -94,12 +94,12 @@ class Municipios extends CI_Controller
                 return;
             }
 
-            $this->Municipio_model->update($id, [
-                'nome'       => $input['nome'],
-                'secretaria' => $input['secretaria'] ?? null,
-                'telefone'   => $input['telefone'] ?? null,
-                'logo'       => empty($input['logo']) ? null : $input['logo'],
-                'ativo'      => $input['ativo'] ? 1 : 0
+            $this->Unidade_model->update($id, [
+                'nome'         => $input['nome'],
+                'municipio_id' => $input['municipio_id'] ?? null,
+                'telefone'     => $input['telefone'] ?? null,
+                'email'        => $input['email'] ?? null,
+                'ativo'        => $input['ativo'] ? 1 : 0
             ]);
 
             echo json_encode(['message' => 'Atualizado com sucesso']);
@@ -110,12 +110,12 @@ class Municipios extends CI_Controller
     }
 
     /**
-     * DELETE /api/municipios/delete/{id}
+     * DELETE /api/unidades/{id}
      */
     public function delete($id)
     {
         try {
-            $this->Municipio_model->delete($id);
+            $this->Unidade_model->delete($id);
             echo json_encode(['message' => 'Deletado com sucesso']);
         } catch (\Throwable $th) {
             http_response_code(500);

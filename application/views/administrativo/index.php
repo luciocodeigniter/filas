@@ -35,7 +35,7 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="unidades.html" class="btn btn-outline-secondary btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/unidades'); ?>" class="btn btn-outline-secondary btn-lg w-100 py-4">
                             <i class="fas fa-building fa-3x mb-2 d-block"></i>
                             Unidades
                         </a>
