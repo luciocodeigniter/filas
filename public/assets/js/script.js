@@ -5,6 +5,37 @@
  * ============================================
  */
 
+/**
+ * =========================
+ * API HELPERS
+ * =========================
+ */
+
+async function apiRequest(url, method = 'GET', data = null) {
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data ? JSON.stringify(data) : null
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Erro na requisição');
+        }
+
+        return result;
+
+    } catch (error) {
+        console.error('Erro API:', error);
+        exibirNotificacao(error.message || 'Erro inesperado', 'danger');
+        throw error;
+    }
+}
+
 // ============= CONFIGURAÇÕES GLOBAIS =============
 // const CONFIG = {
 //     apiUrl: 'api/', // URL base da API PHP

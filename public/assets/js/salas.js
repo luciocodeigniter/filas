@@ -10,36 +10,6 @@ let salas = [];
 let salaEmEdicao = null;
 let salaParaExcluir = null;
 
-/**
- * =========================
- * API HELPERS
- * =========================
- */
-
-async function apiRequest(url, method = 'GET', data = null) {
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: data ? JSON.stringify(data) : null
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.message || 'Erro na requisição');
-        }
-
-        return result;
-
-    } catch (error) {
-        console.error('Erro API:', error);
-        exibirNotificacao(error.message || 'Erro inesperado', 'danger');
-        throw error;
-    }
-}
 
 
 /**
@@ -133,7 +103,7 @@ function editarSala(id) {
 
     $('#salaId').val(sala.id);
     $('#nomeSala').val(sala.nome);
-    $('#ativoSala').prop('checked', sala.ativo != 0);
+    $('#ativoSala').prop('checked', sala.ativo != '0');
 
     $('#btnCancelarEdicao').show();
     $('#nomeSala').focus();
@@ -187,12 +157,11 @@ async function carregarListaSalas() {
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
-                            <i class="fas fa-door-open text-muted me-2"></i>${sala.nome}
+                            <i class="fas fa-door-open text-muted me-2"></i>${sala.nome}<br>
+                             ${sala.ativo === '1' ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>'}
                         </h6>
                         <div class="d-flex align-items-center gap-1">
-                            <span class="badge ${sala.ativo == '1' ? 'bg-success' : 'bg-danger'}">
-                                ${sala.ativo == '1' ? 'Ativo' : 'Inativo'}
-                            </span>
+                            
                             <button class="btn btn-sm btn-outline-primary" onclick="editarSala(${sala.id})">
                                 <i class="fas fa-edit"></i>
                             </button>
