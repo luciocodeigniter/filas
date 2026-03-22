@@ -179,7 +179,7 @@ function editarUnidade(id) {
     $('#municipioUnidade').val(unidade.municipio_id);
     $('#telefoneUnidade').val(unidade.telefone || '');
     $('#emailUnidade').val(unidade.email || '');
-    $('#ativoUnidade').prop('checked', unidade.ativo !== '0');
+    $('#ativoUnidade').prop('checked', unidade.ativo != '0');
 
     $('#btnCancelarEdicao').show();
     $('#nomeUnidade').focus();
@@ -239,12 +239,10 @@ async function carregarListaUnidades() {
                             <h6 class="mb-1">${unidade.nome}</h6>
                             ${municipioNome ? `<small class="text-muted"><i class="fas fa-map-marker-alt"></i> Município: ${municipioNome}</small><br>` : ''}
                             ${unidade.telefone ? `<small class="text-muted"><i class="fas fa-phone"></i> ${unidade.telefone}</small><br>` : ''}
-                            ${unidade.email ? `<small class="text-muted"><i class="fas fa-envelope"></i> ${unidade.email}</small>` : ''}
+                            ${unidade.email ? `<small class="text-muted"><i class="fas fa-envelope"></i> ${unidade.email}</small><br>` : ''}
+                            ${unidade.ativo === '1' ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>'}
                         </div>
                         <div class="d-flex gap-1">
-                            <span class="badge ${unidade.ativo ? 'bg-success' : 'bg-secondary'}">
-                                ${unidade.ativo ? 'Ativo' : 'Inativo'}
-                            </span>
                             <button class="btn btn-sm btn-outline-primary" onclick="editarUnidade(${unidade.id})">
                                 <i class="fas fa-edit"></i>
                             </button>

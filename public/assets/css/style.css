@@ -550,3 +550,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+.alert-danger {
+    color: white;
+    background-color: #FF0000;
+    border-color: #FF0000;
+}

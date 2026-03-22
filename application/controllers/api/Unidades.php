@@ -26,10 +26,9 @@ class Unidades extends CI_Controller
     {
         try {
             $data = $this->Unidade_model->getAll();
-            echo json_encode($data);
+            return respond(statusCode: 200, data: $data);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['message' => $e->getMessage()]);
+            return respond(statusCode: 500, message: $e->getMessage());
         }
     }
 
@@ -40,10 +39,9 @@ class Unidades extends CI_Controller
     {
         try {
             $data = $this->Unidade_model->getById($id);
-            echo json_encode($data);
+            return respond(statusCode: 200, data: $data);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['message' => $e->getMessage()]);
+            return respond(statusCode: 500, message: $e->getMessage());
         }
     }
 
@@ -53,12 +51,10 @@ class Unidades extends CI_Controller
     public function create()
     {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
+            $input = get_json_input();
 
             if (!$input || empty($input['nome'])) {
-                http_response_code(400);
-                echo json_encode(['message' => 'Nome é obrigatório']);
-                return;
+                throw new Exception('Nome é obrigatório');
             }
 
             $id = $this->Unidade_model->insert([
@@ -69,13 +65,9 @@ class Unidades extends CI_Controller
                 'ativo'        => $input['ativo'] ? 1 : 0
             ]);
 
-            echo json_encode([
-                'message' => 'Criado com sucesso',
-                'id' => $id
-            ]);
+            return respond(statusCode: 201, data: $id);
         } catch (\Throwable $e) {
-            http_response_code(500);
-            echo json_encode(['message' => $e->getMessage()]);
+            return respond(statusCode: 500, message: $e->getMessage());
         }
     }
 
@@ -85,13 +77,11 @@ class Unidades extends CI_Controller
     public function update($id)
     {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
+            $input = get_json_input();
 
 
             if (!$input) {
-                http_response_code(400);
-                echo json_encode(['message' => 'Dados inválidos']);
-                return;
+                throw new Exception('Dados inválidos');
             }
 
             $this->Unidade_model->update($id, [
@@ -102,10 +92,9 @@ class Unidades extends CI_Controller
                 'ativo'        => $input['ativo'] ? 1 : 0
             ]);
 
-            echo json_encode(['message' => 'Atualizado com sucesso']);
+            return respond(statusCode: 200, message: 'Atualizado com sucesso');
         } catch (\Throwable $th) {
-            http_response_code(500);
-            echo json_encode(['message' => $th->getMessage()]);
+            return respond(statusCode: 500, message: $th->getMessage());
         }
     }
 
@@ -116,10 +105,9 @@ class Unidades extends CI_Controller
     {
         try {
             $this->Unidade_model->delete($id);
-            echo json_encode(['message' => 'Deletado com sucesso']);
+            return respond(statusCode: 200, message: 'Unidade excluida com sucesso');
         } catch (\Throwable $th) {
-            http_response_code(500);
-            echo json_encode(['message' => $th->getMessage()]);
+            return respond(statusCode: 500, message: $th->getMessage());
         }
     }
 }
