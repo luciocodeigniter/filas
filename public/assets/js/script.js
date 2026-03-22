@@ -161,7 +161,7 @@ function getMedico(id) {
 function getClasseClassificacao(classificacaoId) {
     const classificacao = getClassificacao(classificacaoId);
     if (!classificacao) return 'badge-secondary';
-    
+
     const mapa = {
         'vermelho': 'badge-vermelho',
         'laranja': 'badge-laranja',
@@ -169,7 +169,7 @@ function getClasseClassificacao(classificacaoId) {
         'verde': 'badge-verde',
         'azul': 'badge-azul'
     };
-    
+
     return mapa[classificacao.cor] || 'badge-secondary';
 }
 
@@ -190,9 +190,9 @@ function exibirNotificacao(mensagem, tipo = 'success') {
             ${mensagem}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `);
-    
+
     $('body').append(toast);
-    
+
     // Remove após 5 segundos
     setTimeout(() => {
         toast.fadeOut(() => toast.remove());
@@ -208,16 +208,16 @@ function reproduzirSom() {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         oscillator.frequency.value = 800;
         oscillator.type = 'sine';
-        
+
         gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
+
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.5);
     } catch (e) {
@@ -229,13 +229,13 @@ function reproduzirSom() {
 function atualizarRelogio() {
     const agora = new Date();
     const hora = agora.toLocaleTimeString('pt-BR');
-    const data = agora.toLocaleDateString('pt-BR', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    const data = agora.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
-    
+
     $('#relogio, #relogioPainel').text(hora);
     $('#dataPainel').text(data);
 }
@@ -244,13 +244,19 @@ function atualizarRelogio() {
 setInterval(atualizarRelogio, 1000);
 
 // ============= MÁSCARAS DE INPUT =============
-$(document).ready(function() {
+$(document).ready(function () {
     // Máscara de CPF
-    $('#cpfPaciente').mask('000.000.000-00');
-    
+    if ($('#cpfPaciente').length) {
+        $('#cpfPaciente').mask('000.000.000-00');
+    }
+
+
     // Máscara de Telefone
-    $('#telefonePaciente').mask('(00) 00000-0000');
-    
+    if ($('#telefonePaciente').length) {
+        $('#telefonePaciente').mask('(00) 00000-0000');
+    }
+
+
     // Atualiza relógio imediatamente
     atualizarRelogio();
 });
@@ -263,24 +269,24 @@ $(document).ready(function() {
 function buscarSenhas(filtro = {}) {
     return new Promise((resolve) => {
         let senhas = [...dadosMockados.senhas];
-        
+
         // Aplica filtros
         if (filtro.status) {
             senhas = senhas.filter(s => s.status === filtro.status);
         }
-        
+
         // Ordena por prioridade e data de entrada
         senhas.sort((a, b) => {
             const classA = getClassificacao(a.classificacao_risco_id);
             const classB = getClassificacao(b.classificacao_risco_id);
-            
+
             if (classA.prioridade !== classB.prioridade) {
                 return classA.prioridade - classB.prioridade;
             }
-            
+
             return new Date(a.data_entrada) - new Date(b.data_entrada);
         });
-        
+
         resolve(senhas);
     });
 }
@@ -306,10 +312,10 @@ function criarSenha(dados) {
             consultorio_id: null,
             medico_id: null
         };
-        
+
         dadosMockados.senhas.push(novaSenha);
         salvarDados();
-        
+
         resolve(novaSenha);
     });
 }
@@ -320,7 +326,7 @@ function criarSenha(dados) {
 function atualizarSenha(id, dados) {
     return new Promise((resolve) => {
         const senha = dadosMockados.senhas.find(s => s.id === id);
-        
+
         if (senha) {
             Object.assign(senha, dados);
             salvarDados();
@@ -343,10 +349,10 @@ function registrarChamada(senhaId, consultorioId, medicoId) {
             medico_id: medicoId,
             data_chamada: new Date().toISOString()
         };
-        
+
         dadosMockados.chamadas.push(chamada);
         salvarDados();
-        
+
         resolve(chamada);
     });
 }
@@ -360,10 +366,10 @@ function buscarUltimaChamada() {
             resolve(null);
             return;
         }
-        
+
         const ultimaChamada = dadosMockados.chamadas[dadosMockados.chamadas.length - 1];
         const senha = dadosMockados.senhas.find(s => s.id === ultimaChamada.senha_id);
-        
+
         if (senha) {
             resolve({
                 ...ultimaChamada,
@@ -390,7 +396,7 @@ function buscarUltimasChamadas(limite = 5) {
                     senha: senha
                 };
             });
-        
+
         resolve(chamadas);
     });
 }
@@ -405,7 +411,7 @@ function calcularEstatisticas() {
     const senhasHoje = dadosMockados.senhas.filter(s => {
         return new Date(s.data_entrada).toDateString() === hoje;
     });
-    
+
     return {
         total: senhasHoje.length,
         aguardando: senhasHoje.filter(s => s.status === 'aguardando').length,

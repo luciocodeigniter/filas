@@ -57,6 +57,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['administrativo'] = 'Administrativo/index';
 $route['administrativo/municipios'] = 'Municipios/index';
 $route['administrativo/unidades'] = 'Unidades/index';
+$route['administrativo/salas'] = 'Salas/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
@@ -64,3 +65,6 @@ $route['api/municipios/(:num)'] = 'api/municipios/show/$1';
 
 $route['api/unidades'] = 'api/unidades/index';
 $route['api/unidades/(:num)'] = 'api/unidades/show/$1';
+
+$route['api/salas'] = 'api/salas/index';
+$route['api/salas/(:num)'] = 'api/salas/show/$1';

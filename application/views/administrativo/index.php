@@ -41,13 +41,13 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="salas.html" class="btn btn-outline-dark btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/salas'); ?>" class="btn btn-outline-dark btn-lg w-100 py-4">
                             <i class="fas fa-door-open fa-3x mb-2 d-block"></i>
                             Salas
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="profissional.html" class="btn btn-outline-primary btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/profissionais'); ?>" class="btn btn-outline-primary btn-lg w-100 py-4">
                             <i class="fas fa-user-tie fa-3x mb-2 d-block"></i>
                             Profissional
                         </a>
