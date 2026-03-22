@@ -202,7 +202,7 @@ async function carregarListaUnidades() {
             : null;
 
         const item = $(`
-            <div class="card mb-2 ${!unidade.ativo ? 'opacity-50' : ''}">
+            <div class="card mb-2 ${unidade.ativo == '0' ? 'opacity-50' : ''}">
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>

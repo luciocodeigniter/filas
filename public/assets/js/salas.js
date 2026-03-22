@@ -153,7 +153,7 @@ async function carregarListaSalas() {
 
     salas.forEach(sala => {
         const item = $(`
-            <div class="card mb-2 ${!sala.ativo ? 'opacity-50' : ''}">
+            <div class="card mb-2 ${sala.ativo == '0' ? 'opacity-50' : ''}">
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">

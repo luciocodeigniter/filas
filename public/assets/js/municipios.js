@@ -223,7 +223,7 @@ async function carregarListaMunicipios() {
             : `<span class="bg-light rounded d-inline-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;"><i class="fas fa-image text-muted"></i></span>`;
 
         const item = $(`
-            <div class="card mb-2 ${!municipio.ativo ? 'opacity-50' : ''}">
+            <div class="card mb-2 ${municipio.ativo == '0' ? 'opacity-50' : ''}">
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="d-flex align-items-center flex-grow-1">

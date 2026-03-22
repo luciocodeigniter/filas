@@ -59,13 +59,13 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="classificacoes.html" class="btn btn-outline-danger btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/classificacoes'); ?>" class="btn btn-outline-danger btn-lg w-100 py-4">
                             <i class="fas fa-heart-pulse fa-3x mb-2 d-block"></i>
                             Classificação de Risco
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="mensagens.html" class="btn btn-outline-info btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/mensagens'); ?>" class="btn btn-outline-info btn-lg w-100 py-4">
                             <i class="fas fa-bullhorn fa-3x mb-2 d-block"></i>
                             Mensagens
                         </a>
