@@ -87,7 +87,7 @@ $(document).ready(function () {
         if (!municipioParaExcluir) return;
 
         try {
-            await apiRequest(`${API_URL}/${municipioParaExcluir.id}`, 'DELETE');
+            await apiRequest(`${API_URL}/delete/${municipioParaExcluir.id}`, 'DELETE');
 
             exibirNotificacao('Município excluído com sucesso!', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalExcluir')).hide();
