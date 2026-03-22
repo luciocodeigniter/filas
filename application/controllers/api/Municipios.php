@@ -16,7 +16,7 @@ class Municipios extends CI_Controller
             exit(0);
         }
 
-        // $this->load->model('Municipio_model');
+        $this->load->model('Municipio_model');
     }
 
     /**
@@ -24,8 +24,13 @@ class Municipios extends CI_Controller
      */
     public function index()
     {
-        // $data = $this->Municipio_model->getAll();
-        echo json_encode([]);
+        try {
+            $data = $this->Municipio_model->getAll();
+            echo json_encode($data);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['message' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -33,42 +38,45 @@ class Municipios extends CI_Controller
      */
     public function show($id)
     {
-        $data = $this->Municipio_model->getById($id);
-
-        if (!$data) {
-            http_response_code(404);
-            echo json_encode(['message' => 'Município não encontrado']);
-            return;
+        try {
+            $data = $this->Municipio_model->getById($id);
+            echo json_encode($data);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['message' => $e->getMessage()]);
         }
-
-        echo json_encode($data);
     }
 
     /**
      * POST /api/municipios
      */
-    public function store()
+    public function create()
     {
-        $input = json_decode(file_get_contents('php://input'), true);
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
 
-        if (!$input || empty($input['nome'])) {
-            http_response_code(400);
-            echo json_encode(['message' => 'Nome é obrigatório']);
-            return;
+            if (!$input || empty($input['nome'])) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Nome é obrigatório']);
+                return;
+            }
+
+            $id = $this->Municipio_model->insert([
+                'nome'       => $input['nome'],
+                'secretaria' => $input['secretaria'] ?? null,
+                'telefone'   => $input['telefone'] ?? null,
+                'logo'       => empty($input['logo']) ? null : $input['logo'],
+                'ativo'      => $input['ativo'] ? 1 : 0
+            ]);
+
+            echo json_encode([
+                'message' => 'Criado com sucesso',
+                'id' => $id
+            ]);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['message' => $e->getMessage()]);
         }
-
-        $id = $this->Municipio_model->insert([
-            'nome'       => $input['nome'],
-            'secretaria' => $input['secretaria'] ?? '',
-            'telefone'   => $input['telefone'] ?? '',
-            'logo'       => $input['logo'] ?? '',
-            'ativo'      => isset($input['ativo']) ? (int)$input['ativo'] : 1
-        ]);
-
-        echo json_encode([
-            'message' => 'Criado com sucesso',
-            'id' => $id
-        ]);
     }
 
     /**
@@ -76,23 +84,29 @@ class Municipios extends CI_Controller
      */
     public function update($id)
     {
-        $input = json_decode(file_get_contents('php://input'), true);
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
 
-        if (!$input) {
-            http_response_code(400);
-            echo json_encode(['message' => 'Dados inválidos']);
-            return;
+
+            if (!$input) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Dados inválidos']);
+                return;
+            }
+
+            $this->Municipio_model->update($id, [
+                'nome'       => $input['nome'],
+                'secretaria' => $input['secretaria'] ?? null,
+                'telefone'   => $input['telefone'] ?? null,
+                'logo'       => empty($input['logo']) ? null : $input['logo'],
+                'ativo'      => $input['ativo'] ? 1 : 0
+            ]);
+
+            echo json_encode(['message' => 'Atualizado com sucesso']);
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            echo json_encode(['message' => $th->getMessage()]);
         }
-
-        $this->Municipio_model->update($id, [
-            'nome'       => $input['nome'],
-            'secretaria' => $input['secretaria'] ?? '',
-            'telefone'   => $input['telefone'] ?? '',
-            'logo'       => $input['logo'] ?? '',
-            'ativo'      => isset($input['ativo']) ? (int)$input['ativo'] : 1
-        ]);
-
-        echo json_encode(['message' => 'Atualizado com sucesso']);
     }
 
     /**
@@ -100,8 +114,12 @@ class Municipios extends CI_Controller
      */
     public function delete($id)
     {
-        $this->Municipio_model->delete($id);
-
-        echo json_encode(['message' => 'Excluído com sucesso']);
+        try {
+            $this->Municipio_model->delete($id);
+            echo json_encode(['message' => 'Deletado com sucesso']);
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            echo json_encode(['message' => $th->getMessage()]);
+        }
     }
 }

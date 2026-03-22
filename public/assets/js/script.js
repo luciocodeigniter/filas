@@ -5,22 +5,12 @@
  * ============================================
  */
 
-// ============= VERIFICAR AUTENTICAÇÃO =============
-(function() {
-    const href = window.location.href || '';
-    const isLogin = href.indexOf('login.html') !== -1;
-    const isPainelTV = href.indexOf('painel-tv.html') !== -1;
-    if (!isLogin && !isPainelTV && !sessionStorage.getItem('filasWeb_logado')) {
-        window.location.href = 'login.html';
-    }
-})();
-
 // ============= CONFIGURAÇÕES GLOBAIS =============
-const CONFIG = {
-    apiUrl: 'api/', // URL base da API PHP
-    atualizacaoAutomatica: 5000, // 5 segundos
-    tempoOverlayChamada: 5000 // 5 segundos
-};
+// const CONFIG = {
+//     apiUrl: 'api/', // URL base da API PHP
+//     atualizacaoAutomatica: 5000, // 5 segundos
+//     tempoOverlayChamada: 5000 // 5 segundos
+// };
 
 // ============= DADOS MOCKADOS (SIMULAÇÃO) =============
 let dadosMockados = {

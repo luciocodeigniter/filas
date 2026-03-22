@@ -59,8 +59,4 @@ $route['administrativo/municipios'] = 'Municipios/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
-// $route['api/municipios/(:num)'] = 'api/municipios/show/$1';
-
-// $route['api/municipios']['post'] = 'api/municipios/store';
-// $route['api/municipios/(:num)']['put'] = 'api/municipios/update/$1';
-// $route['api/municipios/(:num)']['delete'] = 'api/municipios/delete/$1';
+$route['api/municipios/(:num)'] = 'api/municipios/show/$1';

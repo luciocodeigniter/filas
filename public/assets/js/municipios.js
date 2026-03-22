@@ -6,7 +6,6 @@
 
 const LOGO_MAX_SIZE = 2 * 1024 * 1024; // 2MB
 const API_URL = '/api/municipios'; // ajuste se necessário
-console.log('API URL:', API_URL);
 
 let municipios = [];
 let municipioEmEdicao = null;
@@ -76,6 +75,10 @@ $(document).ready(function () {
         $('#logoMunicipio').val('');
         $('#previewLogo').hide().removeData('base64');
         $('#previewLogoImg').attr('src', '');
+
+        if (municipioEmEdicao) {
+            municipioEmEdicao.logo = null;
+        }
     });
 
     $('#btnCancelarEdicao').on('click', cancelarEdicao);
@@ -120,6 +123,9 @@ $('#formMunicipio').submit(async function (e) {
     const nome = $('#nomeMunicipio').val().trim();
     const secretaria = $('#secretariaMunicipio').val().trim();
     const telefone = $('#telefoneMunicipio').val();
+
+    // pega o ativo pelo name
+
     const ativo = $('#ativoMunicipio').is(':checked');
     let logo = $('#previewLogo').data('base64') || '';
 
@@ -136,16 +142,20 @@ $('#formMunicipio').submit(async function (e) {
         nome,
         secretaria,
         telefone,
-        logo,
         ativo
     };
 
+    // 🔥 só envia logo se existir
+    if (logo) {
+        payload.logo = logo;
+    }
+
     try {
         if (id) {
-            await apiRequest(`${API_URL}/${id}`, 'PUT', payload);
+            await apiRequest(`${API_URL}/update/${id}`, 'PUT', payload);
             exibirNotificacao('Município atualizado com sucesso!', 'success');
         } else {
-            await apiRequest(API_URL, 'POST', payload);
+            await apiRequest(`${API_URL}/create`, 'POST', payload);
             exibirNotificacao('Município cadastrado com sucesso!', 'success');
         }
 
@@ -157,7 +167,9 @@ $('#formMunicipio').submit(async function (e) {
 
         carregarListaMunicipios();
 
-    } catch (e) { }
+    } catch (e) {
+        console.error(e);
+    }
 });
 
 /**
@@ -186,7 +198,7 @@ async function editarMunicipio(id) {
         $('#nomeMunicipio').val(municipio.nome);
         $('#secretariaMunicipio').val(municipio.secretaria || '');
         $('#telefoneMunicipio').val(municipio.telefone || '');
-        $('#ativoMunicipio').prop('checked', municipio.ativo !== false);
+        $('#ativoMunicipio').prop('checked', municipio.ativo !== '0');
 
         if (municipio.logo) {
             $('#previewLogoImg').attr('src', municipio.logo);
@@ -237,8 +249,8 @@ async function carregarListaMunicipios() {
 
     municipios.forEach(municipio => {
         const logoHtml = municipio.logo
-            ? `<img src="${municipio.logo}" class="rounded me-2" style="height:36px;">`
-            : `<span class="bg-light rounded d-inline-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;"><i class="fas fa-image text-muted"></i></span>`;
+            ? `<img src="${municipio.logo}" alt="Logo" class="rounded me-2" style="height: 36px; width: auto; object-fit: contain;">`
+            : `<span class="bg-light rounded d-inline-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;"><i class="fas fa-image text-muted"></i></span>`;
 
         const item = $(`
             <div class="card mb-2 ${!municipio.ativo ? 'opacity-50' : ''}">
@@ -249,7 +261,8 @@ async function carregarListaMunicipios() {
                             <div>
                                 <h6 class="mb-0">${municipio.nome}</h6>
                                 ${municipio.secretaria ? `<small>${municipio.secretaria}</small><br>` : ''}
-                                ${municipio.telefone ? `<small>${municipio.telefone}</small>` : ''}
+                                ${municipio.telefone ? `<small>${municipio.telefone}</small><br>` : ''}
+                                ${municipio.ativo === '1' ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>'}
                             </div>
                         </div>
                         <div class="d-flex gap-1">
@@ -264,5 +277,3 @@ async function carregarListaMunicipios() {
         container.append(item);
     });
 }
-
-console.log('Municípios via API carregado!');
