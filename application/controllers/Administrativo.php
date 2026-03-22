@@ -6,7 +6,6 @@ class Administrativo extends CI_Controller
 	public function index()
 	{
 		$data['title'] = 'Administrativo';
-		$data['content'] = $this->load->view('administrativo/index', NULL, TRUE);
-		$this->load->view('layouts/administrativo', $data);
+		$this->load->view('administrativo/index', $data); // aqui não tem layout
 	}
 }

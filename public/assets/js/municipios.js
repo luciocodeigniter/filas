@@ -1,79 +1,108 @@
 /**
  * ============================================
- * MUNICÍPIOS - JavaScript
- * CRUD de Municípios (nome, secretaria, telefone, logo)
+ * MUNICÍPIOS - JavaScript (API)
  * ============================================
  */
 
 const LOGO_MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const API_URL = '/api/municipios'; // ajuste se necessário
+console.log('API URL:', API_URL);
 
 let municipios = [];
 let municipioEmEdicao = null;
 let municipioParaExcluir = null;
 
-if (localStorage.getItem('municipios')) {
+/**
+ * =========================
+ * API HELPERS
+ * =========================
+ */
+
+async function apiRequest(url, method = 'GET', data = null) {
     try {
-        municipios = JSON.parse(localStorage.getItem('municipios'));
-    } catch (e) {
-        console.error('Erro ao carregar municípios:', e);
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data ? JSON.stringify(data) : null
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Erro na requisição');
+        }
+
+        return result;
+
+    } catch (error) {
+        console.error('Erro API:', error);
+        exibirNotificacao(error.message || 'Erro inesperado', 'danger');
+        throw error;
     }
 }
 
-function salvarMunicipios() {
-    localStorage.setItem('municipios', JSON.stringify(municipios));
-}
+/**
+ * =========================
+ * LOAD INICIAL
+ * =========================
+ */
 
-$(document).ready(function() {
+$(document).ready(function () {
     carregarListaMunicipios();
-    
-    // Máscara de telefone
+
     $('#telefoneMunicipio').mask('(00) 00000-0000');
-    
-    // Upload de logo - converter para base64
-    $('#logoMunicipio').on('change', function() {
+
+    $('#logoMunicipio').on('change', function () {
         const file = this.files[0];
         if (!file) return;
-        
+
         if (file.size > LOGO_MAX_SIZE) {
             exibirNotificacao('A imagem deve ter no máximo 2MB!', 'warning');
             $(this).val('');
             return;
         }
-        
+
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             $('#previewLogoImg').attr('src', e.target.result);
             $('#previewLogo').data('base64', e.target.result).show();
         };
         reader.readAsDataURL(file);
     });
-    
-    // Remover logo
-    $('#btnRemoverLogo').on('click', function() {
+
+    $('#btnRemoverLogo').on('click', function () {
         $('#logoMunicipio').val('');
         $('#previewLogo').hide().removeData('base64');
         $('#previewLogoImg').attr('src', '');
     });
-    
-    // Cancelar edição
-    $('#btnCancelarEdicao').on('click', function() {
-        cancelarEdicao();
-    });
-    
-    // Confirmar exclusão
-    $('#btnConfirmarExcluir').on('click', function() {
-        if (municipioParaExcluir !== null) {
-            municipios = municipios.filter(m => m.id !== municipioParaExcluir.id);
-            salvarMunicipios();
-            carregarListaMunicipios();
+
+    $('#btnCancelarEdicao').on('click', cancelarEdicao);
+
+    $('#btnConfirmarExcluir').on('click', async function () {
+        if (!municipioParaExcluir) return;
+
+        try {
+            await apiRequest(`${API_URL}/${municipioParaExcluir.id}`, 'DELETE');
+
             exibirNotificacao('Município excluído com sucesso!', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalExcluir')).hide();
             municipioParaExcluir = null;
-        }
+
+            carregarListaMunicipios();
+
+        } catch (e) { }
     });
 });
 
-$('#formMunicipio').on('reset', function() {
+/**
+ * =========================
+ * FORM
+ * =========================
+ */
+
+$('#formMunicipio').on('reset', function () {
     setTimeout(() => {
         $('#municipioId').val('');
         $('#ativoMunicipio').prop('checked', true);
@@ -84,59 +113,58 @@ $('#formMunicipio').on('reset', function() {
     }, 0);
 });
 
-$('#formMunicipio').submit(function(e) {
+$('#formMunicipio').submit(async function (e) {
     e.preventDefault();
-    
+
     const id = $('#municipioId').val();
     const nome = $('#nomeMunicipio').val().trim();
     const secretaria = $('#secretariaMunicipio').val().trim();
     const telefone = $('#telefoneMunicipio').val();
     const ativo = $('#ativoMunicipio').is(':checked');
     let logo = $('#previewLogo').data('base64') || '';
-    
+
     if (!nome) {
         exibirNotificacao('Por favor, digite o nome do município!', 'warning');
         return;
     }
-    
+
     if (municipioEmEdicao && !logo && municipioEmEdicao.logo) {
         logo = municipioEmEdicao.logo;
     }
-    
-    if (id) {
-        // Atualizar
-        const municipio = municipios.find(m => m.id == id);
-        if (municipio) {
-            municipio.nome = nome;
-            municipio.secretaria = secretaria;
-            municipio.telefone = telefone || '';
-            municipio.logo = logo;
-            municipio.ativo = ativo;
-            salvarMunicipios();
+
+    const payload = {
+        nome,
+        secretaria,
+        telefone,
+        logo,
+        ativo
+    };
+
+    try {
+        if (id) {
+            await apiRequest(`${API_URL}/${id}`, 'PUT', payload);
             exibirNotificacao('Município atualizado com sucesso!', 'success');
+        } else {
+            await apiRequest(API_URL, 'POST', payload);
+            exibirNotificacao('Município cadastrado com sucesso!', 'success');
         }
-    } else {
-        // Criar
-        const municipio = {
-            id: Date.now(),
-            nome: nome,
-            secretaria: secretaria || '',
-            telefone: telefone || '',
-            logo: logo,
-            ativo: ativo
-        };
-        municipios.push(municipio);
-        salvarMunicipios();
-        exibirNotificacao('Município cadastrado com sucesso!', 'success');
-    }
-    
-    $('#formMunicipio')[0].reset();
-    $('#ativoMunicipio').prop('checked', true);
-    $('#btnRemoverLogo').trigger('click');
-    municipioEmEdicao = null;
-    $('#btnCancelarEdicao').hide();
-    carregarListaMunicipios();
+
+        $('#formMunicipio')[0].reset();
+        $('#ativoMunicipio').prop('checked', true);
+        $('#btnRemoverLogo').trigger('click');
+        municipioEmEdicao = null;
+        $('#btnCancelarEdicao').hide();
+
+        carregarListaMunicipios();
+
+    } catch (e) { }
 });
+
+/**
+ * =========================
+ * AÇÕES
+ * =========================
+ */
 
 function cancelarEdicao() {
     municipioEmEdicao = null;
@@ -148,43 +176,56 @@ function cancelarEdicao() {
     carregarListaMunicipios();
 }
 
-function editarMunicipio(id) {
-    const municipio = municipios.find(m => m.id === id);
-    if (!municipio) return;
-    
-    municipioEmEdicao = municipio;
-    $('#municipioId').val(municipio.id);
-    $('#nomeMunicipio').val(municipio.nome);
-    $('#secretariaMunicipio').val(municipio.secretaria || '');
-    $('#telefoneMunicipio').val(municipio.telefone || '');
-    $('#ativoMunicipio').prop('checked', municipio.ativo !== false);
-    
-    if (municipio.logo) {
-        $('#previewLogoImg').attr('src', municipio.logo);
-        $('#previewLogo').data('base64', municipio.logo).show();
-    } else {
-        $('#previewLogo').hide();
-    }
-    
-    $('#btnCancelarEdicao').show();
-    $('#nomeMunicipio').focus();
+async function editarMunicipio(id) {
+    try {
+        const municipio = await apiRequest(`${API_URL}/${id}`);
+
+        municipioEmEdicao = municipio;
+
+        $('#municipioId').val(municipio.id);
+        $('#nomeMunicipio').val(municipio.nome);
+        $('#secretariaMunicipio').val(municipio.secretaria || '');
+        $('#telefoneMunicipio').val(municipio.telefone || '');
+        $('#ativoMunicipio').prop('checked', municipio.ativo !== false);
+
+        if (municipio.logo) {
+            $('#previewLogoImg').attr('src', municipio.logo);
+            $('#previewLogo').data('base64', municipio.logo).show();
+        } else {
+            $('#previewLogo').hide();
+        }
+
+        $('#btnCancelarEdicao').show();
+        $('#nomeMunicipio').focus();
+
+    } catch (e) { }
 }
 
 function excluirMunicipio(id) {
-    const municipio = municipios.find(m => m.id === id);
-    if (!municipio) return;
-    
-    municipioParaExcluir = municipio;
-    $('#modalExcluirNome').text(municipio.nome);
+    municipioParaExcluir = { id };
     const modal = new bootstrap.Modal(document.getElementById('modalExcluir'));
     modal.show();
 }
 
-function carregarListaMunicipios() {
+/**
+ * =========================
+ * LISTAGEM
+ * =========================
+ */
+
+async function carregarListaMunicipios() {
     const container = $('#listaMunicipios');
     container.empty();
-    
-    if (municipios.length === 0) {
+
+    try {
+        municipios = await apiRequest(API_URL);
+
+    } catch (e) {
+        container.html('<p class="text-danger">Erro ao carregar municípios</p>');
+        return;
+    }
+
+    if (!municipios.length) {
         container.html(`
             <div class="text-center text-muted py-4">
                 <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
@@ -193,41 +234,35 @@ function carregarListaMunicipios() {
         `);
         return;
     }
-    
+
     municipios.forEach(municipio => {
-        const logoHtml = municipio.logo 
-            ? `<img src="${municipio.logo}" alt="Logo" class="rounded me-2" style="height: 36px; width: auto; object-fit: contain;">`
-            : `<span class="bg-light rounded d-inline-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;"><i class="fas fa-image text-muted"></i></span>`;
-        
+        const logoHtml = municipio.logo
+            ? `<img src="${municipio.logo}" class="rounded me-2" style="height:36px;">`
+            : `<span class="bg-light rounded d-inline-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;"><i class="fas fa-image text-muted"></i></span>`;
+
         const item = $(`
             <div class="card mb-2 ${!municipio.ativo ? 'opacity-50' : ''}">
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex align-items-center flex-grow-1 min-width-0">
+                        <div class="d-flex align-items-center flex-grow-1">
                             ${logoHtml}
-                            <div class="flex-grow-1">
+                            <div>
                                 <h6 class="mb-0">${municipio.nome}</h6>
-                                ${municipio.secretaria ? `<small class="text-muted"><i class="fas fa-landmark"></i> ${municipio.secretaria}</small><br>` : ''}
-                                ${municipio.telefone ? `<small class="text-muted"><i class="fas fa-phone"></i> ${municipio.telefone}</small>` : ''}
+                                ${municipio.secretaria ? `<small>${municipio.secretaria}</small><br>` : ''}
+                                ${municipio.telefone ? `<small>${municipio.telefone}</small>` : ''}
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-1 ms-2">
-                            <span class="badge ${municipio.ativo ? 'bg-success' : 'bg-secondary'}">
-                                ${municipio.ativo ? 'Ativo' : 'Inativo'}
-                            </span>
-                            <button class="btn btn-sm btn-outline-primary" onclick="editarMunicipio(${municipio.id})" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="excluirMunicipio(${municipio.id})" title="Excluir">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-primary" onclick="editarMunicipio(${municipio.id})">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="excluirMunicipio(${municipio.id})">Excluir</button>
                         </div>
                     </div>
                 </div>
             </div>
         `);
+
         container.append(item);
     });
 }
 
-console.log('Municípios carregado com sucesso!');
+console.log('Municípios via API carregado!');
