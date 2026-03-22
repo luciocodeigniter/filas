@@ -8,7 +8,7 @@ class Unidade_model extends CI_Model
 
     public function getAll()
     {
-        return $this->db->get($this->table)->result();
+        return $this->db->order_by('nome', 'ASC')->get($this->table)->result();
     }
 
     public function getById($id)
