@@ -53,6 +53,9 @@ $route['default_controller'] = Home::class;
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['login'] = 'auth/login';
+$route['logout'] = 'auth/logout';
+
 // Administrativo
 $route['administrativo'] = 'Administrativo/index';
 $route['administrativo/municipios'] = 'Municipios/index';

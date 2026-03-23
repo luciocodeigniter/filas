@@ -23,7 +23,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
                 <a href="alterar-senha.html" class="btn btn-outline-light btn-sm">
                     <i class="fas fa-key"></i> Alterar senha
                 </a>
-                <a href="login.html" class="btn btn-outline-light btn-sm" onclick="sessionStorage.removeItem('filasWeb_logado'); sessionStorage.removeItem('filasWeb_usuario'); sessionStorage.removeItem('filasWeb_login'); sessionStorage.removeItem('filasWeb_profissional_id');">
+                <a href="<?php echo base_url('logout'); ?>" class="btn btn-outline-light btn-sm" onclick="sessionStorage.removeItem('filasWeb_logado'); sessionStorage.removeItem('filasWeb_usuario'); sessionStorage.removeItem('filasWeb_login'); sessionStorage.removeItem('filasWeb_profissional_id');">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
             </div>
