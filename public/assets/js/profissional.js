@@ -1,299 +1,287 @@
 /**
  * ============================================
- * PROFISSIONAL - JavaScript
- * Funções específicas da página de profissionais
+ * PROFISSIONAIS - JavaScript (API + CRUD)
  * ============================================
  */
 
-// Carregar profissionais do localStorage
+const API_PROFISSIONAIS = '/api/profissionais';
+const API_UNIDADES = '/api/unidades';
+const API_TIPOS = '/api/tipos';
+
 let profissionais = [];
-if (localStorage.getItem('profissionais')) {
-    try {
-        profissionais = JSON.parse(localStorage.getItem('profissionais'));
-    } catch (e) {
-        console.error('Erro ao carregar profissionais:', e);
-    }
-}
+let unidades = [];
+let tiposAtendimento = [];
 
-function salvarProfissionais() {
-    localStorage.setItem('profissionais', JSON.stringify(profissionais));
-}
+let profissionalEmEdicao = null;
+let profissionalParaExcluir = null;
 
-function getUnidades() {
-    try {
-        return JSON.parse(localStorage.getItem('unidades') || '[]');
-    } catch (e) {
-        return [];
-    }
-}
-
-function getUnidadeNome(id) {
-    const unidades = getUnidades();
-    const unidade = unidades.find(u => u.id === id);
-    return unidade ? unidade.nome : '-';
-}
-
-function getTiposAtendimento() {
-    try {
-        return JSON.parse(localStorage.getItem('tiposAtendimento') || '[]');
-    } catch (e) {
-        return [];
-    }
-}
-
-function getTipoAtendimentoNome(id) {
-    const tipos = getTiposAtendimento();
-    const tipo = tipos.find(t => t.id === id);
-    return tipo ? tipo.nome : '-';
-}
-
-function carregarUnidadesCheckbox() {
-    const unidades = getUnidades().filter(u => u.ativo);
-    const container = $('#listaUnidadesCheckbox');
-    container.empty();
-    
-    if (unidades.length === 0) {
-        container.html('<small class="text-muted">Nenhuma unidade cadastrada. <a href="unidades.html">Cadastrar unidades</a></small>');
-        return;
-    }
-    
-    unidades.forEach(unidade => {
-        const check = $(`
-            <div class="form-check">
-                <input class="form-check-input unidade-check" type="checkbox" value="${unidade.id}" id="unidade_${unidade.id}">
-                <label class="form-check-label" for="unidade_${unidade.id}">${unidade.nome}</label>
-            </div>
-        `);
-        container.append(check);
-    });
-}
-
-function carregarTiposAtendimentoCheckbox() {
-    const tipos = getTiposAtendimento().filter(t => t.ativo);
-    const container = $('#listaTiposAtendimentoCheckbox');
-    container.empty();
-    
-    if (tipos.length === 0) {
-        container.html('<small class="text-muted">Nenhum tipo cadastrado. <a href="tipos_atendimentos.html">Cadastrar tipos</a></small>');
-        return;
-    }
-    
-    tipos.forEach(tipo => {
-        const check = $(`
-            <div class="form-check">
-                <input class="form-check-input tipo-atendimento-check" type="checkbox" value="${tipo.id}" id="tipo_${tipo.id}">
-                <label class="form-check-label" for="tipo_${tipo.id}">${tipo.nome}</label>
-            </div>
-        `);
-        container.append(check);
-    });
-}
-
-$(document).ready(function() {
-    carregarUnidadesCheckbox();
-    carregarTiposAtendimentoCheckbox();
+/**
+ * =========================
+ * INIT
+ * =========================
+ */
+$(document).ready(async function () {
+    await carregarDependencias();
     carregarListaProfissionais();
-    
-    // Máscara de telefone
+
+    $('#btnCancelarEdicao').on('click', cancelarEdicao);
+
+    $('#btnConfirmarExcluir').on('click', async function () {
+        if (!profissionalParaExcluir) return;
+
+        try {
+            await apiRequest(`${API_PROFISSIONAIS}/delete/${profissionalParaExcluir.id}`, 'DELETE');
+
+            exibirNotificacao('Profissional excluído com sucesso!', 'success');
+
+            bootstrap.Modal.getInstance(document.getElementById('modalExcluir')).hide();
+
+            profissionalParaExcluir = null;
+            carregarListaProfissionais();
+
+        } catch (e) {}
+    });
+
     $('#telefoneProfissional').mask('(00) 00000-0000');
 });
 
-$('#formProfissional').on('reset', function() {
+/**
+ * =========================
+ * DEPENDÊNCIAS (API)
+ * =========================
+ */
+async function carregarDependencias() {
+    try {
+        unidades = await apiRequest(API_UNIDADES);
+        tiposAtendimento = await apiRequest(API_TIPOS);
+
+        carregarUnidadesCheckbox();
+        carregarTiposAtendimentoCheckbox();
+
+    } catch (e) {
+        console.error('Erro ao carregar dependências');
+    }
+}
+
+/**
+ * =========================
+ * FORM
+ * =========================
+ */
+$('#formProfissional').on('reset', function () {
     setTimeout(() => {
         $('.unidade-check').prop('checked', false);
         $('.tipo-atendimento-check').prop('checked', false);
         $('#ativoProfissional').prop('checked', true);
-        $('#perfilAcesso').val('');
+        profissionalEmEdicao = null;
+        $('#profissionalId').val('');
+        $('#btnCancelarEdicao').hide();
     }, 0);
 });
 
-$('#formProfissional').submit(function(e) {
+$('#formProfissional').submit(async function (e) {
     e.preventDefault();
-    
+
+    const id = $('#profissionalId').val();
     const nome = $('#nomeProfissional').val().trim();
+    const sobrenome = $('#sobrenomeProfissional').val().trim();
     const telefone = $('#telefoneProfissional').val();
     const email = $('#emailProfissional').val().trim();
-    const perfilAcesso = $('#perfilAcesso').val();
     const senha = $('#senhaProfissional').val();
     const ativo = $('#ativoProfissional').is(':checked');
-    const unidadeIds = $('.unidade-check:checked').map(function() { return parseInt($(this).val()); }).get();
-    const tipoAtendimentoIds = $('.tipo-atendimento-check:checked').map(function() { return parseInt($(this).val()); }).get();
-    
-    if (!nome) {
-        exibirNotificacao('Por favor, digite o nome do profissional!', 'warning');
-        return;
-    }
-    
-    if (!perfilAcesso) {
-        exibirNotificacao('Por favor, selecione o perfil de acesso!', 'warning');
-        return;
-    }
-    
-    if (!senha || senha.length < 4) {
-        exibirNotificacao('Por favor, digite uma senha com no mínimo 4 caracteres!', 'warning');
-        return;
-    }
-    
-    if (unidadeIds.length === 0) {
-        exibirNotificacao('Por favor, selecione ao menos uma unidade!', 'warning');
-        return;
-    }
-    
-    const tiposDisponiveis = getTiposAtendimento().filter(t => t.ativo);
-    if (tiposDisponiveis.length > 0 && tipoAtendimentoIds.length === 0) {
-        exibirNotificacao('Por favor, selecione ao menos um tipo de atendimento!', 'warning');
-        return;
-    }
-    
-    const profissional = {
-        id: Date.now(),
-        nome: nome,
-        telefone: telefone || '',
-        email: email || '',
-        perfil_acesso: perfilAcesso,
-        senha: senha,
+
+    const unidadeIds = $('.unidade-check:checked').map(function () {
+        return $(this).val();
+    }).get();
+
+    const tipoAtendimentoIds = $('.tipo-atendimento-check:checked').map(function () {
+        return $(this).val();
+    }).get();
+
+    if (!nome) return exibirNotificacao('Digite o nome!', 'warning');
+    // if (!perfilAcesso) return exibirNotificacao('Selecione o perfil!', 'warning');
+    if (!id && (!senha || senha.length < 4)) return exibirNotificacao('Senha mínima 4 caracteres!', 'warning');
+    if (unidadeIds.length === 0) return exibirNotificacao('Selecione ao menos uma unidade!', 'warning');
+
+    const payload = {
+        nome,
+        sobrenome,
+        telefone,
+        email,
+        senha,
         unidade_ids: unidadeIds,
         tipo_atendimento_ids: tipoAtendimentoIds,
-        ativo: ativo
+        ativo
     };
-    
-    profissionais.push(profissional);
-    salvarProfissionais();
-    
-    exibirNotificacao('Profissional cadastrado com sucesso!', 'success');
-    $('#formProfissional')[0].reset();
-    $('#ativoProfissional').prop('checked', true);
-    $('#perfilAcesso').val('');
-    $('.unidade-check').prop('checked', false);
-    $('.tipo-atendimento-check').prop('checked', false);
-    carregarListaProfissionais();
+
+    try {
+        if (id) {
+            await apiRequest(`${API_PROFISSIONAIS}/update/${id}`, 'PUT', payload);
+            exibirNotificacao('Atualizado com sucesso!', 'success');
+        } else {
+            await apiRequest(`${API_PROFISSIONAIS}/create`, 'POST', payload);
+            exibirNotificacao('Cadastrado com sucesso!', 'success');
+        }
+
+        $('#formProfissional')[0].reset();
+        carregarListaProfissionais();
+
+    } catch (e) {}
 });
 
-function carregarListaProfissionais() {
-    const tbody = $('#listaProfissionais');
-    tbody.empty();
-    
-    if (profissionais.length === 0) {
-        tbody.html(`
-            <tr>
-                <td colspan="7" class="text-center text-muted py-4">
-                    <i class="fas fa-user-tie fa-3x mb-3 d-block"></i>
-                    Nenhum profissional cadastrado
-                </td>
-            </tr>
-        `);
+/**
+ * =========================
+ * CHECKBOXES
+ * =========================
+ */
+function carregarUnidadesCheckbox() {
+    const container = $('#listaUnidadesCheckbox');
+    container.empty();
+
+    const ativos = unidades.filter(u => u.ativo == '1');
+
+    if (!ativos.length) {
+        container.html('<small class="text-muted">Nenhuma unidade cadastrada</small>');
         return;
     }
-    
-    profissionais.forEach(profissional => {
-        const unidadesNomes = (profissional.unidade_ids || []).map(id => getUnidadeNome(id)).join(', ') || '-';
-        const atendimentosNomes = (profissional.tipo_atendimento_ids || []).map(id => getTipoAtendimentoNome(id)).join(', ') || '-';
-        const perfil = profissional.perfil_acesso || '-';
-        const contato = [];
-        if (profissional.telefone) contato.push(`<i class="fas fa-phone"></i> ${profissional.telefone}`);
-        if (profissional.email) contato.push(`<i class="fas fa-envelope"></i> ${profissional.email}`);
-        
+
+    ativos.forEach(u => {
+        container.append(`
+            <div class="form-check">
+                <input class="form-check-input unidade-check" type="checkbox" value="${u.id}" id="unidade_${u.id}">
+                <label class="form-check-label">${u.nome}</label>
+            </div>
+        `);
+    });
+}
+
+function carregarTiposAtendimentoCheckbox() {
+    const container = $('#listaTiposAtendimentoCheckbox');
+    container.empty();
+
+    const ativos = tiposAtendimento.filter(t => t.ativo == '1');
+
+    if (!ativos.length) {
+        container.html('<small class="text-muted">Nenhum tipo cadastrado</small>');
+        return;
+    }
+
+    ativos.forEach(t => {
+        container.append(`
+            <div class="form-check">
+                <input class="form-check-input tipo-atendimento-check" type="checkbox" value="${t.id}" id="tipo_${t.id}">
+                <label class="form-check-label">${t.nome}</label>
+            </div>
+        `);
+    });
+}
+
+/**
+ * =========================
+ * LISTAGEM
+ * =========================
+ */
+async function carregarListaProfissionais() {
+    const tbody = $('#listaProfissionais');
+    tbody.empty();
+
+    try {
+        profissionais = await apiRequest(API_PROFISSIONAIS);
+    } catch (e) {
+        tbody.html('<tr><td colspan="7">Erro ao carregar</td></tr>');
+        return;
+    }
+
+    if (!profissionais.length) {
+        tbody.html(`<tr><td colspan="7" class="text-center">Nenhum cadastrado</td></tr>`);
+        return;
+    }
+
+    profissionais.forEach(p => {
+
+        const unidadesNomes = (p.unidade_ids || [])
+            .map(id => unidades.find(u => u.id == id)?.nome)
+            .filter(Boolean)
+            .join(', ') || '-';
+
+        const tiposNomes = (p.tipo_atendimento_ids || [])
+            .map(id => tiposAtendimento.find(t => t.id == id)?.nome)
+            .filter(Boolean)
+            .join(', ') || '-';
+
         const row = $(`
-            <tr class="${!profissional.ativo ? 'table-secondary' : ''}">
-                <td><strong>${profissional.nome}</strong></td>
-                <td><small>${perfil}</small></td>
-                <td><small>${unidadesNomes}</small></td>
-                <td><small>${atendimentosNomes}</small></td>
-                <td><small>${contato.join('<br>') || '-'}</small></td>
+            <tr class="${!p.ativo ? 'table-secondary' : ''}">
+                <td>${p.nome}</td>
+                <td>${p.perfil_acesso}</td>
+                <td>${unidadesNomes}</td>
+                <td>${tiposNomes}</td>
+                <td>${p.email || '-'}</td>
                 <td>
-                    <span class="badge ${profissional.ativo ? 'bg-success' : 'bg-secondary'}">
-                        ${profissional.ativo ? 'Ativo' : 'Inativo'}
+                    <span class="badge ${p.ativo == 1 ? 'bg-success' : 'bg-secondary'}">
+                        ${p.ativo == 1 ? 'Ativo' : 'Inativo'}
                     </span>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="abrirModalAssociar(${profissional.id})" title="Associar unidades e atendimentos">
-                        <i class="fas fa-link"></i>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editarProfissional(${p.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="excluirProfissional(${p.id})">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
         `);
+
         tbody.append(row);
     });
 }
 
-let profissionalEmEdicao = null;
+/**
+ * =========================
+ * AÇÕES
+ * =========================
+ */
+function editarProfissional(id) {
+    const p = profissionais.find(x => x.id == id);
+    if (!p) return;
 
-function abrirModalAssociar(profissionalId) {
-    const profissional = profissionais.find(p => p.id === profissionalId);
-    if (!profissional) return;
-    
-    profissionalEmEdicao = profissional;
-    $('#modalProfissionalNome').text(profissional.nome);
-    
-    // Preenche checkboxes das unidades
-    const unidades = getUnidades().filter(u => u.ativo);
-    const containerUnidades = $('#modalUnidadesCheckbox');
-    containerUnidades.empty();
-    
-    if (unidades.length === 0) {
-        containerUnidades.html('<small class="text-muted">Nenhuma unidade cadastrada. <a href="unidades.html">Cadastrar unidades</a></small>');
-    } else {
-        const unidadeIds = profissional.unidade_ids || [];
-        unidades.forEach(unidade => {
-            const checked = unidadeIds.includes(unidade.id) ? 'checked' : '';
-            const check = $(`
-                <div class="form-check">
-                    <input class="form-check-input modal-unidade-check" type="checkbox" value="${unidade.id}" id="modal_unidade_${unidade.id}" ${checked}>
-                    <label class="form-check-label" for="modal_unidade_${unidade.id}">${unidade.nome}</label>
-                </div>
-            `);
-            containerUnidades.append(check);
-        });
-    }
-    
-    // Preenche checkboxes dos tipos de atendimento
-    const tipos = getTiposAtendimento().filter(t => t.ativo);
-    const containerTipos = $('#modalTiposAtendimentoCheckbox');
-    containerTipos.empty();
-    
-    if (tipos.length === 0) {
-        containerTipos.html('<small class="text-muted">Nenhum tipo cadastrado. <a href="tipos_atendimentos.html">Cadastrar tipos</a></small>');
-    } else {
-        const tipoIds = profissional.tipo_atendimento_ids || [];
-        tipos.forEach(tipo => {
-            const checked = tipoIds.includes(tipo.id) ? 'checked' : '';
-            const check = $(`
-                <div class="form-check">
-                    <input class="form-check-input modal-tipo-atendimento-check" type="checkbox" value="${tipo.id}" id="modal_tipo_${tipo.id}" ${checked}>
-                    <label class="form-check-label" for="modal_tipo_${tipo.id}">${tipo.nome}</label>
-                </div>
-            `);
-            containerTipos.append(check);
-        });
-    }
-    
-    const modal = new bootstrap.Modal(document.getElementById('modalAssociarUnidades'));
-    modal.show();
+    profissionalEmEdicao = p;
+
+    $('#profissionalId').val(p.id);
+    $('#nomeProfissional').val(p.firt_name);
+    $('#sobrenomeProfissional').val(p.last_name);
+    $('#telefoneProfissional').val(p.phone);
+    $('#emailProfissional').val(p.email);
+    // $('#perfilAcesso').val(p.perfil_acesso);
+    $('#ativoProfissional').prop('checked', p.active == '1');
+
+    $('.unidade-check').prop('checked', false);
+    $('.tipo-atendimento-check').prop('checked', false);
+
+    (p.unidade_ids || []).forEach(id => {
+        $(`#unidade_${id}`).prop('checked', true);
+    });
+
+    (p.tipo_atendimento_ids || []).forEach(id => {
+        $(`#tipo_${id}`).prop('checked', true);
+    });
+
+    $('#btnCancelarEdicao').show();
 }
 
-$('#btnSalvarAssociacoes').click(function() {
-    if (!profissionalEmEdicao) return;
-    
-    const unidadeIds = $('.modal-unidade-check:checked').map(function() { return parseInt($(this).val()); }).get();
-    const tipoAtendimentoIds = $('.modal-tipo-atendimento-check:checked').map(function() { return parseInt($(this).val()); }).get();
-    
-    if (unidadeIds.length === 0) {
-        exibirNotificacao('Selecione ao menos uma unidade!', 'warning');
-        return;
-    }
-    
-    const tiposDisponiveis = getTiposAtendimento().filter(t => t.ativo);
-    if (tiposDisponiveis.length > 0 && tipoAtendimentoIds.length === 0) {
-        exibirNotificacao('Selecione ao menos um tipo de atendimento!', 'warning');
-        return;
-    }
-    
-    profissionalEmEdicao.unidade_ids = unidadeIds;
-    profissionalEmEdicao.tipo_atendimento_ids = tipoAtendimentoIds;
-    salvarProfissionais();
-    carregarListaProfissionais();
-    
-    bootstrap.Modal.getInstance(document.getElementById('modalAssociarUnidades')).hide();
-    exibirNotificacao('Associações salvas com sucesso!', 'success');
+function excluirProfissional(id) {
+    const p = profissionais.find(x => x.id == id);
+    if (!p) return;
+
+    profissionalParaExcluir = p;
+
+    $('#modalExcluirNome').text(p.nome);
+    new bootstrap.Modal(document.getElementById('modalExcluir')).show();
+}
+
+function cancelarEdicao() {
+    $('#formProfissional')[0].reset();
+    $('#profissionalId').val('');
+    $('#btnCancelarEdicao').hide();
     profissionalEmEdicao = null;
-});
+}

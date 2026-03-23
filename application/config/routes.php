@@ -63,6 +63,7 @@ $route['administrativo/unidades'] = 'Unidades/index';
 $route['administrativo/salas'] = 'Salas/index';
 $route['administrativo/classificacoes'] = 'Classificacoes/index';
 $route['administrativo/tipos'] = 'Tipos/index';
+$route['administrativo/profissionais'] = 'Profissionais/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
@@ -79,3 +80,6 @@ $route['api/classificacoes/(:num)'] = 'api/classificacoes/show/$1';
 
 $route['api/tipos'] = 'api/tipos/index';
 $route['api/tipos/(:num)'] = 'api/tipos/show/$1';
+
+$route['api/profissionais'] = 'api/profissionais/index';
+$route['api/profissionais/(:num)'] = 'api/profissionais/show/$1';
