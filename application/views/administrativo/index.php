@@ -53,7 +53,7 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="tipos_atendimentos.html" class="btn btn-outline-info btn-lg w-100 py-4">
+                        <a href="<?php echo base_url('administrativo/tipos'); ?>" class="btn btn-outline-info btn-lg w-100 py-4">
                             <i class="fas fa-tasks fa-3x mb-2 d-block"></i>
                             Tipos de Atendimento
                         </a>
