@@ -39,7 +39,7 @@ $(document).ready(async function () {
             profissionalParaExcluir = null;
             carregarListaProfissionais();
 
-        } catch (e) {}
+        } catch (e) { }
     });
 
     $('#telefoneProfissional').mask('(00) 00000-0000');
@@ -76,6 +76,8 @@ $('#formProfissional').on('reset', function () {
         profissionalEmEdicao = null;
         $('#profissionalId').val('');
         $('#btnCancelarEdicao').hide();
+        $('#senhaProfissional').prop('required', true);
+        $('#spanSenha').html('*');
     }, 0);
 });
 
@@ -98,10 +100,10 @@ $('#formProfissional').submit(async function (e) {
         return $(this).val();
     }).get();
 
-    if (!nome) return exibirNotificacao('Digite o nome!', 'warning');
-    // if (!perfilAcesso) return exibirNotificacao('Selecione o perfil!', 'warning');
-    if (!id && (!senha || senha.length < 4)) return exibirNotificacao('Senha mínima 4 caracteres!', 'warning');
-    if (unidadeIds.length === 0) return exibirNotificacao('Selecione ao menos uma unidade!', 'warning');
+    if (!nome) return exibirNotificacao('Digite o nome!', 'danger');
+    if (!id && (!senha || senha.length < 4)) return exibirNotificacao('Senha mínima 4 caracteres!', 'danger');
+    if (unidadeIds.length === 0) return exibirNotificacao('Selecione ao menos uma unidade!', 'danger');
+    if (tipoAtendimentoIds.length === 0) return exibirNotificacao('Selecione ao menos um tipo de atendimento!', 'danger');
 
     const payload = {
         nome,
@@ -126,7 +128,7 @@ $('#formProfissional').submit(async function (e) {
         $('#formProfissional')[0].reset();
         carregarListaProfissionais();
 
-    } catch (e) {}
+    } catch (e) { }
 });
 
 /**
@@ -199,26 +201,26 @@ async function carregarListaProfissionais() {
 
     profissionais.forEach(p => {
 
-        const unidadesNomes = (p.unidade_ids || [])
-            .map(id => unidades.find(u => u.id == id)?.nome)
-            .filter(Boolean)
-            .join(', ') || '-';
+        const unidadesNomes = (p.unidades || [])
+            .map(u => `<span class="badge bg-primary me-1">${u.nome}</span>`)
+            .join('') || '-';
 
-        const tiposNomes = (p.tipo_atendimento_ids || [])
-            .map(id => tiposAtendimento.find(t => t.id == id)?.nome)
-            .filter(Boolean)
-            .join(', ') || '-';
+        const tiposNomes = (p.tipos || [])
+            .map(t => `<span class="badge bg-info me-1">${t.nome}</span>`)
+            .join('') || '-';
 
         const row = $(`
             <tr class="${!p.ativo ? 'table-secondary' : ''}">
-                <td>${p.nome}</td>
-                <td>${p.perfil_acesso}</td>
+                <td>${p.first_name} ${p.last_name}</td>
                 <td>${unidadesNomes}</td>
                 <td>${tiposNomes}</td>
-                <td>${p.email || '-'}</td>
+                <td>${p.email || ''}
+                <br>
+                    ${p.phone || ''}
+                </td>
                 <td>
-                    <span class="badge ${p.ativo == 1 ? 'bg-success' : 'bg-secondary'}">
-                        ${p.ativo == 1 ? 'Ativo' : 'Inativo'}
+                    <span class="badge ${p.active == '1' ? 'bg-success' : 'bg-danger'}">
+                        ${p.active == '1' ? 'Ativo' : 'Inativo'}
                     </span>
                 </td>
                 <td>
@@ -247,23 +249,28 @@ function editarProfissional(id) {
 
     profissionalEmEdicao = p;
 
+    $('#senhaProfissional').prop('required', false);
+    $('#spanSenha').html('(informe se quiser alterar)');
+
     $('#profissionalId').val(p.id);
-    $('#nomeProfissional').val(p.firt_name);
+    $('#nomeProfissional').val(p.first_name);
     $('#sobrenomeProfissional').val(p.last_name);
     $('#telefoneProfissional').val(p.phone);
     $('#emailProfissional').val(p.email);
-    // $('#perfilAcesso').val(p.perfil_acesso);
     $('#ativoProfissional').prop('checked', p.active == '1');
 
+    // limpa tudo
     $('.unidade-check').prop('checked', false);
     $('.tipo-atendimento-check').prop('checked', false);
 
-    (p.unidade_ids || []).forEach(id => {
-        $(`#unidade_${id}`).prop('checked', true);
+    // ✅ marca unidades
+    (p.unidades || []).forEach(u => {
+        $(`#unidade_${u.id}`).prop('checked', true);
     });
 
-    (p.tipo_atendimento_ids || []).forEach(id => {
-        $(`#tipo_${id}`).prop('checked', true);
+    // ✅ marca tipos
+    (p.tipos || []).forEach(t => {
+        $(`#tipo_${t.id}`).prop('checked', true);
     });
 
     $('#btnCancelarEdicao').show();

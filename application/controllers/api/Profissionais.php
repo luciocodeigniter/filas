@@ -23,10 +23,65 @@ class Profissionais extends CI_Controller
     public function index()
     {
         try {
-            $data = $this->ion_auth->users('profissional')->result(); // get users from 'profissional' group
-            return respond(statusCode: 200, data: $data);
+
+            // 1. Busca usuários do grupo profissional
+            $users = $this->ion_auth
+                ->select('users.id, users.email, users.phone, users.first_name, users.last_name, users.active')
+                ->users('profissional')
+                ->result();
+
+            if (!$users) {
+                return respond(200, []);
+            }
+
+            $userIds = array_column($users, 'id');
+
+            /**
+             * 2. Buscar unidades em lote
+             */
+            $unidades = $this->db
+                ->select('users_unidades.user_id, unidades.id, unidades.nome')
+                ->from('users_unidades')
+                ->join('unidades', 'unidades.id = users_unidades.unidade_id')
+                ->where_in('users_unidades.user_id', $userIds)
+                ->get()
+                ->result();
+
+            /**
+             * 3. Buscar tipos em lote
+             */
+            $tipos = $this->db
+                ->select('users_tipos_atendimento.user_id, tipos_atendimento.id, tipos_atendimento.nome')
+                ->from('users_tipos_atendimento')
+                ->join('tipos_atendimento', 'tipos_atendimento.id = users_tipos_atendimento.tipo_atendimento_id')
+                ->where_in('users_tipos_atendimento.user_id', $userIds)
+                ->get()
+                ->result();
+
+            /**
+             * 4. Organizar (mapear por user_id)
+             */
+            $mapUnidades = [];
+            foreach ($unidades as $u) {
+                $mapUnidades[$u->user_id][] = $u;
+            }
+
+            $mapTipos = [];
+            foreach ($tipos as $t) {
+                $mapTipos[$t->user_id][] = $t;
+            }
+
+            /**
+             * 5. Anexar aos usuários
+             */
+            foreach ($users as $key => $user) {
+                $users[$key]->unidades = $mapUnidades[$user->id] ?? [];
+                $users[$key]->tipos = $mapTipos[$user->id] ?? [];
+            }
+
+            return respond(200, $users);
         } catch (Exception $e) {
-            return respond(statusCode: 500, message: $e->getMessage());
+            return respond(500, null, $e->getMessage());
         }
     }
 
@@ -52,37 +107,25 @@ class Profissionais extends CI_Controller
             $input = get_json_input();
 
 
-            // <pre>Array
-            // (
-            //     [nome] => Lucio (first_name)
-            //     [telefone] => (41) 98456-4654 (phone)
-            //     [email] => lucio@email.com
-            //     [perfil_acesso] => Super Admin (será profissional)
-            //     [senha] => teste123456 (password)
-            //     [unidade_ids] => Array
-            //         (
-            //             [0] => 4
-            //         )
-
-            //     [tipo_atendimento_ids] => Array
-            //         (
-            //             [0] => 2
-            //         )
-
-            //     [ativo] => 1 (active)
-            // )
-
             // geramos o username com o nome e um hash
             $username = url_title($input['nome']) . '-' . substr(md5(time()), 0, 8);
             $password = $input['senha'];
             $email    = $input['email'];
+            $phone    = empty($input['telefone']) ? null : $input['telefone'];
             $additional_data = array(
                 'first_name' => $input['nome'],
                 'last_name'  => $input['sobrenome'],
-                'phone'      => $input['telefone'],
+                'phone'      => $phone,
                 'active'     => $input['ativo'] ? 1 : 0,
                 'username'   => $username // mandamos o username para o ion_auth
             );
+
+            // valida duplicidade ignorando o próprio ID
+            $validation = $this->validate_unique_user_fields($email, $phone);
+
+            if (! $validation['status']) {
+                throw new Exception($validation['message']);
+            }
 
             $group = array('3'); // Sets user to profissional group.
 
@@ -92,14 +135,10 @@ class Profissionais extends CI_Controller
             $user_id = $this->ion_auth->register($username, $password, $email, $additional_data, $group);
 
             // agora precisamos armazenar os tipo_atendimento_ids se tem algum dado
-            if (!empty($input['tipo_atendimento_ids'])) {
-                $this->sync_tipos_atendimento($user_id, $input['tipo_atendimento_ids']);
-            }
+            $this->sync_tipos_atendimento($user_id, $input['tipo_atendimento_ids'] ?? []);
 
             // agora precisamos armazenar os unidade_ids se tem algum dado
-            if (!empty($input['unidade_ids'])) {
-                $this->sync_unidades($user_id, $input['unidade_ids']);
-            }
+            $this->sync_unidades($user_id, $input['unidade_ids'] ?? []);
 
             // se der tudo certo, commitamos a transação
             if ($this->db->trans_status() === false) {
@@ -112,6 +151,41 @@ class Profissionais extends CI_Controller
         } catch (\Throwable $e) {
             return respond(statusCode: 500, message: $e->getMessage());
         }
+    }
+
+    /**
+     * Valida se os dados já existem
+     *
+     * @param string $email
+     * @param string $phone
+     * @param int|null $ignoreId
+     * @return array
+     */
+    private function validate_unique_user_fields(string $email, string $phone, ?int $ignoreId = null): array
+    {
+        // valida email
+        $this->db->from('users')->where('email', $email);
+
+        if ($ignoreId) {
+            $this->db->where('id !=', $ignoreId);
+        }
+
+        if ($this->db->count_all_results() > 0) {
+            return ['status' => false, 'message' => 'E-mail já está em uso.'];
+        }
+
+        // valida telefone
+        $this->db->from('users')->where('phone', $phone);
+
+        if ($ignoreId) {
+            $this->db->where('id !=', $ignoreId);
+        }
+
+        if ($this->db->count_all_results() > 0) {
+            return ['status' => false, 'message' => 'Telefone já está em uso.'];
+        }
+
+        return ['status' => true];
     }
 
     /**
@@ -166,22 +240,54 @@ class Profissionais extends CI_Controller
         try {
             $input = get_json_input();
 
-
             if (!$input) {
                 throw new Exception('Dados inválidos');
             }
 
-            $this->Municipio_model->update($id, [
-                'nome'       => $input['nome'],
-                'secretaria' => $input['secretaria'] ?? null,
-                'telefone'   => $input['telefone'] ?? null,
-                'logo'       => empty($input['logo']) ? null : $input['logo'],
-                'ativo'      => $input['ativo'] ? 1 : 0
-            ]);
+            $password = empty($input['senha']) ? null : $input['senha'];
+            $phone = empty($input['telefone']) ? null : $input['telefone'];
 
-            return respond(statusCode: 200, message: 'Atualizado com sucesso');
-        } catch (\Throwable $th) {
-            return respond(statusCode: 500, message: $th->getMessage());
+            // valida duplicidade ignorando o próprio ID
+            $validation = $this->validate_unique_user_fields($input['email'], $phone, $id);
+
+            if (! $validation['status']) {
+                throw new Exception($validation['message']);
+            }
+
+            $data = array(
+                'email'      => $input['email'],
+                'first_name' => $input['nome'],
+                'last_name'  => $input['sobrenome'],
+                'phone'      => $phone,
+                'active'     => $input['ativo'] ? 1 : 0,
+            );
+
+            if (! empty($password)) {
+                $data['password'] = $password;
+            }
+
+            // abrimos a transação
+            $this->db->trans_begin();
+
+            // atualizamos
+            $this->ion_auth->update($id, $data);
+
+            // agora precisamos armazenar os tipo_atendimento_ids se tem algum dado
+            $this->sync_tipos_atendimento($id, $input['tipo_atendimento_ids'] ?? []);
+
+            // agora precisamos armazenar os unidade_ids se tem algum dado
+            $this->sync_unidades($id, $input['unidade_ids'] ?? []);
+
+            // se der tudo certo, commitamos a transação
+            if ($this->db->trans_status() === false) {
+                $this->db->trans_rollback();
+            } else {
+                $this->db->trans_commit();
+            }
+
+            return respond(statusCode: 200, data: $id);
+        } catch (\Throwable $e) {
+            return respond(statusCode: 500, message: $e->getMessage());
         }
     }
 
@@ -191,7 +297,7 @@ class Profissionais extends CI_Controller
     public function delete($id)
     {
         try {
-            $this->Municipio_model->delete($id);
+            $this->ion_auth->delete_user($id);
             return respond(statusCode: 200, message: 'Sucesso!');
         } catch (\Throwable $th) {
             return respond(statusCode: 500, message: $th->getMessage());
