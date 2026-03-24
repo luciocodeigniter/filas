@@ -11,7 +11,7 @@
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-indigo text-white">
         <div class="container-fluid">
-            <a href="index.html" class="navbar-brand">
+            <a href="<?php echo site_url('/'); ?>" class="navbar-brand">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
             <span class="navbar-brand mb-0 h1">
