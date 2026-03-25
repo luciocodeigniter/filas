@@ -66,6 +66,9 @@ $route['administrativo/tipos'] = 'Tipos/index';
 $route['administrativo/profissionais'] = 'Profissionais/index';
 $route['administrativo/mensagens'] = 'Mensagens/index';
 
+// Menus Home
+$route['recepcao'] = 'Recepcao/index';
+
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
 $route['api/municipios/(:num)'] = 'api/municipios/show/$1';
@@ -88,3 +91,8 @@ $route['api/profissionais/(:num)'] = 'api/profissionais/show/$1';
 
 $route['api/mensagens'] = 'api/mensagens/index';
 $route['api/mensagens/(:num)'] = 'api/mensagens/show/$1';
+
+// atendimentos
+$route['api/atendimentos'] = 'api/atendimentos/index';
+$route['api/atendimentos/latest'] = 'api/atendimentos/latest';
+$route['api/atendimentos/(:num)'] = 'api/atendimentos/show/$1';
