@@ -117,21 +117,30 @@
     <div class="modal fade" id="modalSenhaGerada" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
+                <div class="modal-header bg-success text-white no-print">
                     <h5 class="modal-title"><i class="fas fa-check-circle"></i> Senha Gerada com Sucesso!</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center p-5">
-                    <div class="senha-gerada-display mb-4">
-                        <h1 class="display-1 fw-bold text-primary" id="senhaGeradaNumero">A001</h1>
+                    <div class="modal-body text-center p-5">
+
+                        <div id="areaImpressao">
+                            <div class="senha-gerada-display mb-4">
+                                <h1 class="display-1 fw-bold text-primary" id="senhaGeradaNumero">A001</h1>
+                            </div>
+
+                            <h4 id="senhaGeradaNome">Nome</h4>
+
+                            <p class="lead mt-3">
+                                <span class="badge fs-5" id="senhaGeradaClassificacao">URGENTE</span>
+                            </p>
+
+                            <p class="text-muted">Aguarde ser chamado no painel</p>
+                        </div>
+
                     </div>
-                    <h4 id="senhaGeradaNome">Nome</h4>
-                    <p class="lead mt-3">
-                        <span class="badge fs-5" id="senhaGeradaClassificacao">URGENTE</span>
-                    </p>
-                    <p class="text-muted">Aguarde ser chamado no painel</p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer no-print">
                     <button type="button" class="btn btn-primary" onclick="imprimirSenha()">
                         <i class="fas fa-print"></i> Imprimir
                     </button>

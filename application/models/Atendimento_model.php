@@ -18,8 +18,8 @@ class Atendimento_model extends CI_Model
     {
         return $this->db->order_by('data_entrada', 'DESC')
             ->limit($limit)
-            ->get($this->table)
             ->where('status', 'chamando')
+            ->get($this->table)
             ->result();
     }
 
