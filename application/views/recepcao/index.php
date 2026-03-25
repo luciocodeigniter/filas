@@ -132,7 +132,7 @@
                             <h4 id="senhaGeradaNome">Nome</h4>
 
                             <p class="lead mt-3">
-                                <span class="badge fs-5" id="senhaGeradaClassificacao">URGENTE</span>
+                                <span class="badge fs-5" id="senhaGeradaClassificacao"></span>
                             </p>
 
                             <p class="text-muted">Aguarde ser chamado no painel</p>

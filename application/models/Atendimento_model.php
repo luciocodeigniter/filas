@@ -14,9 +14,9 @@ class Atendimento_model extends CI_Model
     /**
      * Recupera os atendimentos mais recentes
      */
-    public function latest(int $limit = 10)
+    public function latest(int $limit = 5)
     {
-        return $this->db->order_by('data_entrada', 'DESC')
+        return $this->db->order_by('data_entrada', 'ASC')
             ->limit($limit)
             ->where('status', 'chamando')
             ->get($this->table)
