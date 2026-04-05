@@ -142,20 +142,25 @@ async function carregarUltimasChamadas() {
         chamadas.forEach(chamada => {
 
             const item = $(`
-                <div class="senha-item ${chamada.classificacao_classe || ''}">
+                <div class="senha-item ${chamada.classificacao_cor || ''}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="senha-numero me-3">${chamada.numero_senha}</span>
-                                <span class="badge ${chamada.classificacao_classe || 'bg-secondary'}">
-                                    ${chamada.classificacao_nome || '-'}
-                                </span>
+                                ${chamada.classificacao_nome ? `
+                                    <span class="badge ${chamada.classificacao_cor || 'bg-secondary'}">
+                                        ${chamada.classificacao_nome}
+                                    </span>
+                                ` : ''}
                             </div>
                             <h6 class="mb-1">${chamada.nome_paciente}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-door-open"></i> ${chamada.consultorio_nome || '-'}
-                                <span class="ms-2">${chamada.hora || ''}</span>
-                            </small>
+
+                            ${chamada.sala_none ? `
+                                    <small class="text-muted">
+                                        <i class="fas fa-door-open"></i> ${chamada.sala_nome || '-'}
+                                        <span class="ms-2">${chamada.data_chamada || ''}</span>
+                                    </small>
+                                ` : ''}
                         </div>
                     </div>
                 </div>
