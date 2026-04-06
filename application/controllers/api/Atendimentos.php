@@ -26,7 +26,8 @@ class Atendimentos extends CI_Controller
     public function index()
     {
         try {
-            $data = $this->Atendimento_model->getAll();
+            $status = $this->input->get('status');
+            $data = $this->Atendimento_model->getAll(status: empty($status) ? null : $status);
             return respond(statusCode: 200, data: $data);
         } catch (Exception $e) {
             return respond(statusCode: 500, message: $e->getMessage());

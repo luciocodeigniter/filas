@@ -69,6 +69,7 @@ $route['administrativo/mensagens'] = 'Mensagens/index';
 // Menus Home
 $route['recepcao'] = 'Recepcao/index';
 $route['triagem'] = 'Triagem/index';
+$route['atendimentos'] = 'Atendimentos/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';

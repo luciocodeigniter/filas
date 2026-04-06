@@ -6,9 +6,28 @@ class Atendimento_model extends CI_Model
 {
     protected $table = 'atendimentos';
 
-    public function getAll()
+    public function getAll(string $status = 'chamando', int $limit = 10)
     {
-        return $this->db->order_by('data_entrada', 'DESC')->get($this->table)->result();
+        // fazemos o join com a tabela de classificacoes
+        // e salas
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->order_by('data_entrada', 'ASC');
+        $this->db->limit($limit);
+        if ($status) {
+            $this->db->where('status', $status);
+        }
+        return $this->db
+            ->where('status', $status)
+            ->get($this->table)
+            ->result();
     }
 
     /**

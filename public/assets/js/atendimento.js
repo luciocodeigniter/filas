@@ -8,27 +8,29 @@
 let senhaAtual = null;
 let senhaEmAtendimento = null;
 
-$(document).ready(function() {
-    // Carrega fila ao iniciar
+$(document).ready(function () {
     atualizarFila();
     atualizarHistorico();
     atualizarEstatisticasConsultorio();
-    
-    // Atualização automática
-    setInterval(() => {
-        atualizarFila();
-        atualizarHistorico();
-        atualizarEstatisticasConsultorio();
-    }, CONFIG.atualizacaoAutomatica);
+
+    //! aqui faremos o com pusher
+    // setInterval(() => {
+    //     atualizarFila();
+    //     atualizarHistorico();
+    //     atualizarEstatisticasConsultorio();
+    // }, CONFIG.atualizacaoAutomatica);
 });
 
 // ============= ATUALIZAR FILA DE ESPERA =============
 
-function atualizarFila() {
-    buscarSenhas({ status: 'aguardando' }).then(senhas => {
+async function atualizarFila() {
+
+    //! aqui faremos o com pusher
+    try {
+        const senhas = await apiRequest('/api/atendimentos?status=aguardando');
         const tbody = $('#corpoTabelaFila');
         tbody.empty();
-        
+
         if (senhas.length === 0) {
             tbody.html(`
                 <tr>
@@ -38,25 +40,19 @@ function atualizarFila() {
                     </td>
                 </tr>
             `);
-            
-            // Desabilita botão chamar se não há pacientes
             $('#btnChamar').prop('disabled', true);
             $('#proximaSenha').text('---');
             $('#proximoNome').text('Aguardando...');
             $('#proximaClassificacao').text('').removeClass();
-            
             return;
         }
-        
-        // Atualiza próximo paciente
-        const proximaSenha = senhas[0];
-        atualizarProximoPaciente(proximaSenha);
-        
-        // Preenche tabela
+
+        atualizarProximoPaciente(senhas[0]);
+
         senhas.forEach((senha, index) => {
             const classificacao = getClassificacao(senha.classificacao_risco_id);
             const tempoEspera = calcularTempoDecorrido(senha.data_entrada);
-            
+
             const row = $(`
                 <tr data-senha-id="${senha.id}" ${index === 0 ? 'class="table-primary"' : ''}>
                     <td>
@@ -79,13 +75,14 @@ function atualizarFila() {
                     </td>
                 </tr>
             `);
-            
+
             tbody.append(row);
         });
-        
-        // Atualiza total da fila
+
         $('#totalFila').text(senhas.length);
-    });
+    } catch (error) {
+        console.error('Erro ao atualizar fila:', error);
+    }
 }
 
 // ============= ATUALIZAR PRÓXIMO PACIENTE =============
@@ -99,156 +96,155 @@ function atualizarProximoPaciente(senha) {
         senhaAtual = null;
         return;
     }
-    
+
     senhaAtual = senha;
     const classificacao = getClassificacao(senha.classificacao_risco_id);
-    
+
     $('#proximaSenha').text(senha.numero_senha);
     $('#proximoNome').text(senha.nome_paciente);
-    
+
     const badge = $('#proximaClassificacao');
     badge.text(classificacao.nome);
-    badge.removeClass();
-    badge.addClass('badge fs-6');
-    badge.addClass(getClasseClassificacao(senha.classificacao_risco_id));
-    
+    badge.removeClass().addClass('badge fs-6').addClass(getClasseClassificacao(senha.classificacao_risco_id));
+
     $('#btnChamar').prop('disabled', false);
 }
 
 // ============= CHAMAR PACIENTE =============
 
-function chamarPaciente() {
+async function chamarPaciente() {
     if (!senhaAtual) {
         exibirNotificacao('Nenhum paciente na fila!', 'warning');
         return;
     }
-    
+
     const consultorioId = parseInt($('#selectConsultorio').val());
     const medicoId = parseInt($('#selectMedico').val());
-    const consultorio = getConsultorio(consultorioId);
-    
-    // Atualiza status da senha
-    atualizarSenha(senhaAtual.id, {
-        status: 'chamando',
-        data_chamada: new Date().toISOString(),
-        consultorio_id: consultorioId,
-        medico_id: medicoId
-    }).then(senhaAtualizada => {
-        // Registra chamada
-        registrarChamada(senhaAtual.id, consultorioId, medicoId);
-        
-        // Exibe modal de chamada
+
+    try {
+        await apiRequest(`/api/senhas/${senhaAtual.id}`, 'PUT', {
+            status: 'chamando',
+            data_chamada: new Date().toISOString(),
+            consultorio_id: consultorioId,
+            medico_id: medicoId
+        });
+
+        await apiRequest('/api/chamadas', 'POST', {
+            senha_id: senhaAtual.id,
+            consultorio_id: consultorioId,
+            medico_id: medicoId,
+            data_chamada: new Date().toISOString()
+        });
+
+        const consultorio = await apiRequest(`/api/consultorios/${consultorioId}`);
+
         $('#modalSenha').text(senhaAtual.numero_senha);
         $('#modalNome').text(senhaAtual.nome_paciente);
         $('#modalConsultorio').text(consultorio.nome);
-        
+
         const modal = new bootstrap.Modal(document.getElementById('modalChamar'));
         modal.show();
-        
-        // Reproduz som
         reproduzirSom();
-        
-        // Fecha modal automaticamente após 3 segundos
-        setTimeout(() => {
-            modal.hide();
-        }, 3000);
-        
-        // Notificação
+        setTimeout(() => modal.hide(), 3000);
+
         exibirNotificacao(`Paciente ${senhaAtual.numero_senha} chamado!`, 'success');
-        
-        // Habilita botão de iniciar atendimento
+
         $('#btnIniciarAtendimento').prop('disabled', false);
         $('#btnChamar').prop('disabled', true);
-        
-        // Atualiza fila e histórico
+
         setTimeout(() => {
             atualizarFila();
             atualizarHistorico();
         }, 500);
-    });
+    } catch (error) {
+        console.error('Erro ao chamar paciente:', error);
+    }
 }
 
 // ============= CHAMAR PACIENTE ESPECÍFICO =============
 
-function chamarPacienteEspecifico(senhaId) {
-    buscarSenhas({ status: 'aguardando' }).then(senhas => {
-        const senha = senhas.find(s => s.id === senhaId);
+async function chamarPacienteEspecifico(senhaId) {
+    try {
+        const senha = await apiRequest(`/api/senhas/${senhaId}`);
         if (senha) {
             senhaAtual = senha;
             atualizarProximoPaciente(senha);
             chamarPaciente();
         }
-    });
+    } catch (error) {
+        console.error('Erro ao buscar senha específica:', error);
+    }
 }
 
 // ============= INICIAR ATENDIMENTO =============
 
-function iniciarAtendimento() {
+async function iniciarAtendimento() {
     if (!senhaAtual) {
         exibirNotificacao('Nenhum paciente chamado!', 'warning');
         return;
     }
-    
-    atualizarSenha(senhaAtual.id, {
-        status: 'atendendo',
-        data_atendimento: new Date().toISOString()
-    }).then(() => {
+
+    try {
+        await apiRequest(`/api/senhas/${senhaAtual.id}`, 'PUT', {
+            status: 'atendendo',
+            data_atendimento: new Date().toISOString()
+        });
+
         senhaEmAtendimento = senhaAtual;
-        
-        // Atualiza card de atendimento
+
         $('#cardAtendimento').show();
         $('#atendimentoNome').text(senhaAtual.nome_paciente);
         $('#atendimentoSenha').text(senhaAtual.numero_senha);
         $('#atendimentoHora').text(formatarHora(new Date()));
-        
-        // Desabilita botões
+
         $('#btnIniciarAtendimento').prop('disabled', true);
         $('#btnFinalizarAtendimento').prop('disabled', false);
-        
+
         exibirNotificacao('Atendimento iniciado!', 'info');
-        
-        // Limpa próximo paciente
+
         senhaAtual = null;
-        
-        // Atualiza fila
         atualizarFila();
-    });
+    } catch (error) {
+        console.error('Erro ao iniciar atendimento:', error);
+    }
 }
 
 // ============= FINALIZAR ATENDIMENTO =============
 
-function finalizarAtendimento() {
+async function finalizarAtendimento() {
     if (!senhaEmAtendimento) {
         exibirNotificacao('Nenhum atendimento em andamento!', 'warning');
         return;
     }
-    
-    atualizarSenha(senhaEmAtendimento.id, {
-        status: 'finalizado',
-        data_finalizacao: new Date().toISOString()
-    }).then(() => {
+
+    try {
+        await apiRequest(`/api/senhas/${senhaEmAtendimento.id}`, 'PUT', {
+            status: 'finalizado',
+            data_finalizacao: new Date().toISOString()
+        });
+
         exibirNotificacao('Atendimento finalizado!', 'success');
-        
-        // Limpa card de atendimento
+
         $('#cardAtendimento').hide();
         senhaEmAtendimento = null;
-        
-        // Habilita botão chamar
+
         $('#btnFinalizarAtendimento').prop('disabled', true);
-        
-        // Atualiza estatísticas
+
         atualizarEstatisticasConsultorio();
         atualizarFila();
-    });
+    } catch (error) {
+        console.error('Erro ao finalizar atendimento:', error);
+    }
 }
 
 // ============= ATUALIZAR HISTÓRICO =============
 
-function atualizarHistorico() {
-    buscarUltimasChamadas(10).then(chamadas => {
+async function atualizarHistorico() {
+    try {
+        const chamadas = await apiRequest('/api/chamadas?limit=10');
         const container = $('#historicoChamadas');
         container.empty();
-        
+
         if (chamadas.length === 0) {
             container.html(`
                 <div class="text-center text-muted py-3">
@@ -257,13 +253,13 @@ function atualizarHistorico() {
             `);
             return;
         }
-        
+
         chamadas.forEach(chamada => {
             if (!chamada.senha) return;
-            
+
             const classificacao = getClassificacao(chamada.senha.classificacao_risco_id);
-            const consultorio = getConsultorio(chamada.consultorio_id);
-            
+            const consultorio = chamada.consultorio;
+
             const item = $(`
                 <div class="list-group-item list-group-item-action list-group-item-chamada">
                     <div class="d-flex justify-content-between align-items-center">
@@ -281,39 +277,29 @@ function atualizarHistorico() {
                     </div>
                 </div>
             `);
-            
+
             container.append(item);
         });
-    });
+    } catch (error) {
+        console.error('Erro ao atualizar histórico:', error);
+    }
 }
 
 // ============= ATUALIZAR ESTATÍSTICAS =============
 
-function atualizarEstatisticasConsultorio() {
-    const stats = calcularEstatisticas();
-    $('#totalAtendimentos').text(stats.finalizado);
+async function atualizarEstatisticasConsultorio() {
+    try {
+        const stats = await apiRequest('/api/estatisticas');
+        $('#totalAtendimentos').text(stats.finalizado);
+    } catch (error) {
+        console.error('Erro ao atualizar estatísticas:', error);
+    }
 }
 
 // ============= ATALHOS DE TECLADO =============
 
-$(document).keydown(function(e) {
-    // F5 - Chamar próximo paciente
-    if (e.keyCode === 116) { // F5
-        e.preventDefault();
-        chamarPaciente();
-    }
-    
-    // F6 - Iniciar atendimento
-    if (e.keyCode === 117) { // F6
-        e.preventDefault();
-        iniciarAtendimento();
-    }
-    
-    // F7 - Finalizar atendimento
-    if (e.keyCode === 118) { // F7
-        e.preventDefault();
-        finalizarAtendimento();
-    }
+$(document).keydown(function (e) {
+    if (e.keyCode === 116) { e.preventDefault(); chamarPaciente(); }
+    if (e.keyCode === 117) { e.preventDefault(); iniciarAtendimento(); }
+    if (e.keyCode === 118) { e.preventDefault(); finalizarAtendimento(); }
 });
-
-console.log('Atendimento carregado com sucesso!');
