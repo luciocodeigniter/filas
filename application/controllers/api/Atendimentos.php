@@ -18,6 +18,7 @@ class Atendimentos extends CI_Controller
 
         $this->load->model('Atendimento_model');
         $this->load->model('Classificacao_model');
+        $this->load->model('Sala_model');
     }
 
     /**
@@ -121,6 +122,63 @@ class Atendimentos extends CI_Controller
                 'motivo_principal'       => $motivoPrincipal,
                 'status'                 => 'aguardando'
             ]);
+
+            return respond(statusCode: 200, message: 'Sucesso');
+        } catch (\Throwable $th) {
+            return respond(statusCode: 500, message: $th->getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/atendimentos/chamar
+     * 
+     * Executado quando o atendente chama o paciente para ir ao consultório (sala)
+     */
+    public function chamar()
+    {
+        try {
+            $input = get_json_input();
+
+
+            if (!$input) {
+                throw new Exception('Dados inválidos');
+            }
+
+            $atendimentoId   = $input['atendimento_id'] ?? throw new Exception('Atendimento obrigatório');
+            $salaId          = $input['sala_id'] ?? throw new Exception('Sala é obrigatório');
+            $profissionalId  = $input['profissional_id'] ?? throw new Exception('Profissional é obrigatório');
+
+
+            // buscamos o atendimento
+            $atendimento = $this->Atendimento_model->getById($atendimentoId);
+
+            if (!$atendimento) {
+                throw new Exception('Atendimento inválido');
+            }
+
+            // buscamos a sala
+            $sala = $this->Sala_model->getById($salaId);
+
+            if (!$sala) {
+                throw new Exception('Sala inválida');
+            }
+
+            // buscamos o profissional
+            $profissional = $this->ion_auth->user($profissionalId)->row();
+
+            if (!$profissional) {
+                throw new Exception('Profissional inválido');
+            }
+
+
+            $this->Atendimento_model->update($atendimentoId, [
+                'data_chamada'    => date('Y-m-d H:i:s'),
+                'profissional_id' => (int) $profissional->id,
+                'status'          => 'chamando',
+                'sala_id'         => (int) $sala->id
+            ]);
+
+            //! temos que dispara o Pusher aqui
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {

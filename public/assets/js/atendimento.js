@@ -122,11 +122,10 @@ async function chamarPaciente() {
     const medicoId = parseInt($('#selectMedico').val());
 
     try {
-        await apiRequest(`/api/senhas/${senhaAtual.id}`, 'PUT', {
-            status: 'chamando',
-            data_chamada: new Date().toISOString(),
-            consultorio_id: consultorioId,
-            medico_id: medicoId
+        await apiRequest(`/api/atendimentos/chamar`, 'PUT', {
+            atendimento_id: senhaAtual.id,
+            sala_id: consultorioId,
+            profissional_id: medicoId
         });
 
         await apiRequest('/api/chamadas', 'POST', {

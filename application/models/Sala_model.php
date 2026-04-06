@@ -6,8 +6,11 @@ class Sala_model extends CI_Model
 {
     protected $table = 'salas';
 
-    public function getAll()
+    public function getAll(array $where = [])
     {
+        if (! empty($where)) {
+            $this->db->where($where);
+        }
         return $this->db->order_by('nome', 'ASC')->get($this->table)->result();
     }
 
