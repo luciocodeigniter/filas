@@ -25,7 +25,7 @@
 
 						<!-- Módulo Atendimento -->
 						<div class="col">
-							<div class="card module-card h-100 border-success" onclick="window.location.href='<?php echo site_url('atendimentos'); ?>''">
+							<div class="card module-card h-100 border-success" onclick="window.location.href='<?php echo site_url('atendimentos'); ?>'">
 								<div class="card-body text-center py-3">
 									<div class="module-icon mb-2">
 										<i class="fas fa-headset fa-4x text-success"></i>
@@ -41,7 +41,7 @@
 
 						<!-- Módulo Triagem -->
 						<div class="col">
-							<div class="card module-card h-100 border-info" onclick="window.location.href='<?php echo site_url('triagem'); ?>''">
+							<div class="card module-card h-100 border-info" onclick="window.location.href='<?php echo site_url('triagem'); ?>'">
 								<div class="card-body text-center py-3">
 									<div class="module-icon mb-2">
 										<i class="fas fa-clipboard-list fa-4x text-info"></i>
@@ -57,7 +57,7 @@
 
 						<!-- Módulo Painel TV -->
 						<div class="col">
-							<div class="card module-card h-100 border-danger" onclick="window.location.href='<?php echo site_url('painel'); ?>''">
+							<div class="card module-card h-100 border-danger" onclick="window.location.href='<?php echo site_url('painel'); ?>'">
 								<div class="card-body text-center py-3">
 									<div class="module-icon mb-2">
 										<i class="fas fa-tv fa-4x text-danger"></i>

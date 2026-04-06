@@ -17,6 +17,7 @@ class Atendimentos extends CI_Controller
         }
 
         $this->load->model('Atendimento_model');
+        $this->load->model('Classificacao_model');
     }
 
     /**
@@ -87,9 +88,9 @@ class Atendimentos extends CI_Controller
     }
 
     /**
-     * PUT /api/atendimentos/update/{id}
+     * PUT /api/atendimentos/classificar
      */
-    public function update($id)
+    public function classificar()
     {
         try {
             $input = get_json_input();
@@ -99,28 +100,28 @@ class Atendimentos extends CI_Controller
                 throw new Exception('Dados inválidos');
             }
 
-            $this->Atendimento_model->update($id, [
-                'nome'               => $input['nome'],
-                'cor'                => $input['cor'] ?? null,
-                'prioridade'         => $input['prioridade'] ?? null,
-                'tempo_estimado_min' => $input['tempo_estimado_min'] ?? null,
-                'ativo'              => $input['ativo'] ? 1 : 0
+            $atendimentoId   = $input['atendimento_id'] ?? throw new Exception('Atendimento obrigatório');
+            $classificacaoId = $input['classificacao_id'] ?? throw new Exception('Classificação de risco obrigatório');
+            $motivoPrincipal = $input['motivo_principal'] ?? throw new Exception('Motivo principal obrigatório');
+
+
+            // buscamos o atendimento
+            $atendimento = $this->Atendimento_model->getById($atendimentoId);
+
+            if (!$atendimento) {
+                throw new Exception('Atendimento inválido');
+            }
+
+            // buscamos a classificação de risco
+            $classificacao = $this->Classificacao_model->getById($classificacaoId);
+
+            $this->Atendimento_model->update($atendimentoId, [
+                'classificacao_risco_id' => $classificacao->id,
+                'motivo_principal'       => $motivoPrincipal,
+                'status'                 => 'aguardando'
             ]);
 
-            return respond(statusCode: 200, message: 'Atualizado com sucesso');
-        } catch (\Throwable $th) {
-            return respond(statusCode: 500, message: $th->getMessage());
-        }
-    }
-
-    /**
-     * DELETE /api/atendimentos/delete/{id}
-     */
-    public function delete($id)
-    {
-        try {
-            $this->Atendimento_model->delete($id);
-            return respond(statusCode: 200, message: 'Sucesso!');
+            return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {
             return respond(statusCode: 500, message: $th->getMessage());
         }

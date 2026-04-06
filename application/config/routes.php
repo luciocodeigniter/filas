@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -68,6 +68,7 @@ $route['administrativo/mensagens'] = 'Mensagens/index';
 
 // Menus Home
 $route['recepcao'] = 'Recepcao/index';
+$route['triagem'] = 'Triagem/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';

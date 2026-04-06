@@ -29,7 +29,7 @@ class Atendimento_model extends CI_Model
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
         return $this->db->order_by('data_entrada', 'ASC')
             ->limit($limit)
-            ->where('status', 'chamando')
+            ->where('status', 'chamando') //! que ainda não foram atendidos
             ->get($this->table)
             ->result();
     }
