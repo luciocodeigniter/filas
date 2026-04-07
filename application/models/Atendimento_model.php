@@ -6,7 +6,30 @@ class Atendimento_model extends CI_Model
 {
     protected $table = 'atendimentos';
 
-    public function getAll(string $status = 'chamando', int $limit = 10)
+    public function getAll()
+    {
+        // fazemos o join com a tabela de classificacoes
+        // e salas
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->order_by('data_entrada', 'ASC');
+        return $this->db
+            ->get($this->table)
+            ->result();
+    }
+
+    /**
+     * Recupera os atendimentos que já passaram pela triagem e que ainda não foram chamados.
+     * Ou seja, estão aguardando definição de sala
+     */
+    public function triados(int $limit = 10)
     {
         // fazemos o join com a tabela de classificacoes
         // e salas
@@ -21,11 +44,37 @@ class Atendimento_model extends CI_Model
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
         $this->db->order_by('data_entrada', 'ASC');
         $this->db->limit($limit);
-        if ($status) {
-            $this->db->where('status', $status);
-        }
         return $this->db
-            ->where('status', $status)
+            ->where('status', 'aguardando') // aguardando
+            ->where('classificacao_risco_id !=', null) // já classificado
+            ->where('sala_id', null) // sem sala
+            ->get($this->table)
+            ->result();
+    }
+
+    /**
+     * Recupera os atendimentos que já foram chamados na data de hoje
+     */
+    public function chamados(int $limit = 10)
+    {
+        // fazemos o join com a tabela de classificacoes
+        // e salas
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->order_by('data_entrada', 'ASC');
+        $this->db->limit($limit);
+
+        return $this->db
+        // data_chamada tem que ser hoje
+            ->where('data_chamada', date('Y-m-d'))
+            ->where('status', 'chamando') // que foram chamados
             ->get($this->table)
             ->result();
     }

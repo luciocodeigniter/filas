@@ -27,8 +27,37 @@ class Atendimentos extends CI_Controller
     public function index()
     {
         try {
-            $status = $this->input->get('status');
-            $data = $this->Atendimento_model->getAll(status: empty($status) ? null : $status);
+            $data = $this->Atendimento_model->getAll();
+            return respond(statusCode: 200, data: $data);
+        } catch (Exception $e) {
+            return respond(statusCode: 500, message: $e->getMessage());
+        }
+    }
+
+    /**
+     * GET /api/atendimentos/triados
+     * 
+     * Recupera os atendimentos que já passaram pela triagem e estão aguardando definição de sala
+     */
+    public function triados()
+    {
+        try {
+            $data = $this->Atendimento_model->triados();
+            return respond(statusCode: 200, data: $data);
+        } catch (Exception $e) {
+            return respond(statusCode: 500, message: $e->getMessage());
+        }
+    }
+
+    /**
+     * GET /api/atendimentos/chamados
+     * 
+     * Recupera os atendimentos que já foram chamados. 
+     */
+    public function chamados()
+    {
+        try {
+            $data = $this->Atendimento_model->chamados(limit: 10);
             return respond(statusCode: 200, data: $data);
         } catch (Exception $e) {
             return respond(statusCode: 500, message: $e->getMessage());
@@ -137,36 +166,35 @@ class Atendimentos extends CI_Controller
     public function chamar()
     {
         try {
-            $input = get_json_input();
 
+            $input = get_json_input();
 
             if (!$input) {
                 throw new Exception('Dados inválidos');
             }
 
-            $atendimentoId   = $input['atendimento_id'] ?? throw new Exception('Atendimento obrigatório');
-            $salaId          = $input['sala_id'] ?? throw new Exception('Sala é obrigatório');
-            $profissionalId  = $input['profissional_id'] ?? throw new Exception('Profissional é obrigatório');
-
+            $atendimentoId   = $input['atendimento_id'] ?? null;
+            $salaId          = $input['sala_id'] ?? null;
+            $profissionalId  = $input['profissional_id'] ?? null;
 
             // buscamos o atendimento
             $atendimento = $this->Atendimento_model->getById($atendimentoId);
 
-            if (!$atendimento) {
+            if (! $atendimento) {
                 throw new Exception('Atendimento inválido');
             }
 
             // buscamos a sala
             $sala = $this->Sala_model->getById($salaId);
 
-            if (!$sala) {
+            if (! $sala) {
                 throw new Exception('Sala inválida');
             }
 
             // buscamos o profissional
             $profissional = $this->ion_auth->user($profissionalId)->row();
 
-            if (!$profissional) {
+            if (! $profissional) {
                 throw new Exception('Profissional inválido');
             }
 
@@ -178,7 +206,7 @@ class Atendimentos extends CI_Controller
                 'sala_id'         => (int) $sala->id
             ]);
 
-            //! temos que dispara o Pusher aqui
+            //! temos que dispara o Pusher aqui para enviar para o painel
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {

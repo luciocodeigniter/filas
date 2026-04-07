@@ -168,8 +168,8 @@ function salvarDados() {
 /**
  * Retorna classificação por ID
  */
-function getClassificacao(id) {
-    return dadosMockados.classificacoes.find(c => c.id == id);
+async function getClassificacao(id) {
+    return await apiRequest(`/api/classificacoes/${id}`);
 }
 
 /**
@@ -189,9 +189,7 @@ function getMedico(id) {
 /**
  * Retorna classe CSS da classificação
  */
-function getClasseClassificacao(classificacaoId) {
-    const classificacao = getClassificacao(classificacaoId);
-    if (!classificacao) return 'badge-secondary';
+function getClasseClassificacao(cor) {
 
     const mapa = {
         'vermelho': 'badge-vermelho',
@@ -201,7 +199,7 @@ function getClasseClassificacao(classificacaoId) {
         'azul': 'badge-azul'
     };
 
-    return mapa[classificacao.cor] || 'badge-secondary';
+    return mapa[cor] || 'badge-secondary';
 }
 
 /**

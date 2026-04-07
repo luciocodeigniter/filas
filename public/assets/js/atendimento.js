@@ -27,7 +27,7 @@ async function atualizarFila() {
 
     //! aqui faremos o com pusher
     try {
-        const senhas = await apiRequest('/api/atendimentos?status=aguardando');
+        const senhas = await apiRequest('/api/atendimentos/triados');
         const tbody = $('#corpoTabelaFila');
         tbody.empty();
 
@@ -49,8 +49,11 @@ async function atualizarFila() {
 
         atualizarProximoPaciente(senhas[0]);
 
-        senhas.forEach((senha, index) => {
-            const classificacao = getClassificacao(senha.classificacao_risco_id);
+        await Promise.all(senhas.map(async (senha, index) => {
+            const classificacao = senha.classificacao_risco_id === null
+                ? null
+                : await getClassificacao(senha.classificacao_risco_id);
+
             const tempoEspera = calcularTempoDecorrido(senha.data_entrada);
 
             const row = $(`
@@ -61,8 +64,8 @@ async function atualizarFila() {
                     </td>
                     <td>${senha.nome_paciente}</td>
                     <td>
-                        <span class="badge ${getClasseClassificacao(senha.classificacao_risco_id)}">
-                            ${classificacao.nome}
+                        <span class="badge ${classificacao === null ? 'badge-secondary' : getClasseClassificacao(classificacao.cor)}">
+                            ${classificacao === null ? '' : classificacao.nome}
                         </span>
                     </td>
                     <td>
@@ -77,7 +80,7 @@ async function atualizarFila() {
             `);
 
             tbody.append(row);
-        });
+        }));
 
         $('#totalFila').text(senhas.length);
     } catch (error) {
@@ -98,14 +101,14 @@ function atualizarProximoPaciente(senha) {
     }
 
     senhaAtual = senha;
-    const classificacao = getClassificacao(senha.classificacao_risco_id);
+    const classificacao = senha.classificacao_risco_id === null ? null : getClassificacao(senha.classificacao_risco_id);
 
     $('#proximaSenha').text(senha.numero_senha);
     $('#proximoNome').text(senha.nome_paciente);
 
     const badge = $('#proximaClassificacao');
     badge.text(classificacao.nome);
-    badge.removeClass().addClass('badge fs-6').addClass(getClasseClassificacao(senha.classificacao_risco_id));
+    badge.removeClass().addClass('badge fs-6').addClass(getClasseClassificacao(classificacao === null ? null : classificacao.cor));
 
     $('#btnChamar').prop('disabled', false);
 }
@@ -128,14 +131,7 @@ async function chamarPaciente() {
             profissional_id: medicoId
         });
 
-        await apiRequest('/api/chamadas', 'POST', {
-            senha_id: senhaAtual.id,
-            consultorio_id: consultorioId,
-            medico_id: medicoId,
-            data_chamada: new Date().toISOString()
-        });
-
-        const consultorio = await apiRequest(`/api/consultorios/${consultorioId}`);
+        const consultorio = await apiRequest(`/api/salas/${consultorioId}`);
 
         $('#modalSenha').text(senhaAtual.numero_senha);
         $('#modalNome').text(senhaAtual.nome_paciente);
@@ -144,7 +140,7 @@ async function chamarPaciente() {
         const modal = new bootstrap.Modal(document.getElementById('modalChamar'));
         modal.show();
         reproduzirSom();
-        setTimeout(() => modal.hide(), 3000);
+        setTimeout(() => modal.hide(), 20000); // 20 segundos
 
         exibirNotificacao(`Paciente ${senhaAtual.numero_senha} chamado!`, 'success');
 
@@ -164,14 +160,17 @@ async function chamarPaciente() {
 
 async function chamarPacienteEspecifico(senhaId) {
     try {
-        const senha = await apiRequest(`/api/senhas/${senhaId}`);
-        if (senha) {
-            senhaAtual = senha;
-            atualizarProximoPaciente(senha);
+        const atendimento = await apiRequest(`/api/atendimentos/${senhaId}`);
+
+        if (atendimento) {
+            console.log(atendimento);
+            senhaAtual = atendimento.numero_senha;
+            atualizarProximoPaciente(atendimento);
             chamarPaciente();
         }
     } catch (error) {
         console.error('Erro ao buscar senha específica:', error);
+        exibirNotificacao(error.message || 'Erro inesperado ao chamar o paciente específico', 'danger');
     }
 }
 
@@ -240,7 +239,7 @@ async function finalizarAtendimento() {
 
 async function atualizarHistorico() {
     try {
-        const chamadas = await apiRequest('/api/chamadas?limit=10');
+        const chamadas = await apiRequest('/api/atendimentos/chamados');
         const container = $('#historicoChamadas');
         container.empty();
 
