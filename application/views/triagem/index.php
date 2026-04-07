@@ -55,17 +55,17 @@
                     </div>
                 </div>
             </div>
-            <!-- Últimos Chamados -->
+            <!-- Aguardando triagem -->
             <div class="col-md-6">
                 <div class="card shadow">
                     <div class="card-header bg-success text-white">
-                        <h5><i class="fas fa-list"></i> Últimos Chamados</h5>
+                        <h5><i class="fas fa-list"></i> Aguardando triagem</h5>
                     </div>
                     <div class="card-body text-center" style="min-height: 200px; max-height: 600px; overflow-y: auto;">
                         <div id="listaChamadas">
                             <div class="ultimos-chamados-vazio py-5">
                                 <i class="fas fa-tv fa-4x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">Nenhuma chamada recente</p>
+                                <p class="text-muted mb-0">Nenhum aguardando triagem</p>
                             </div>
                         </div>
                     </div>

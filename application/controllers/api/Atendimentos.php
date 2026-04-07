@@ -35,6 +35,21 @@ class Atendimentos extends CI_Controller
     }
 
     /**
+     * GET /api/atendimentos/aguardando
+     * 
+     * Recupera os atendimentos que estão aguardando triagem
+     */
+    public function aguardando()
+    {
+        try {
+            $data = $this->Atendimento_model->aguardando();
+            return respond(statusCode: 200, data: $data);
+        } catch (Exception $e) {
+            return respond(statusCode: 500, message: $e->getMessage());
+        }
+    }
+
+    /**
      * GET /api/atendimentos/triados
      * 
      * Recupera os atendimentos que já passaram pela triagem e estão aguardando definição de sala
@@ -149,7 +164,7 @@ class Atendimentos extends CI_Controller
             $this->Atendimento_model->update($atendimentoId, [
                 'classificacao_risco_id' => $classificacao->id,
                 'motivo_principal'       => $motivoPrincipal,
-                'status'                 => 'aguardando'
+                'status'                 => 'triado'
             ]);
 
             return respond(statusCode: 200, message: 'Sucesso');
@@ -204,6 +219,83 @@ class Atendimentos extends CI_Controller
                 'profissional_id' => (int) $profissional->id,
                 'status'          => 'chamando',
                 'sala_id'         => (int) $sala->id
+            ]);
+
+            //! temos que dispara o Pusher aqui para enviar para o painel
+
+            return respond(statusCode: 200, message: 'Sucesso');
+        } catch (\Throwable $th) {
+            return respond(statusCode: 500, message: $th->getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/atendimentos/iniciar
+     * 
+     * Executado quando o atendente clica em "Iniciar atendimento"
+     */
+    public function iniciar()
+    {
+        try {
+
+            $input = get_json_input();
+
+            if (!$input) {
+                throw new Exception('Dados inválidos');
+            }
+
+            $atendimentoId   = $input['atendimento_id'] ?? null;
+
+            // buscamos o atendimento
+            $atendimento = $this->Atendimento_model->getById($atendimentoId);
+
+            if (! $atendimento) {
+                throw new Exception('Atendimento inválido');
+            }
+
+
+            $this->Atendimento_model->update($atendimentoId, [
+                'data_atendimento' => date('Y-m-d H:i:s'),
+                'status'           => 'atendendo',
+            ]);
+
+            //! temos que dispara o Pusher aqui para enviar para o painel
+
+            return respond(statusCode: 200, message: 'Sucesso');
+        } catch (\Throwable $th) {
+            return respond(statusCode: 500, message: $th->getMessage());
+        }
+    }
+
+
+    /**
+     * PUT /api/atendimentos/finalizar
+     * 
+     * Executado quando o atendente clica em "Finalizar atendimento"
+     */
+    public function finalizar()
+    {
+        try {
+
+            $input = get_json_input();
+
+            if (!$input) {
+                throw new Exception('Dados inválidos');
+            }
+
+            $atendimentoId   = $input['atendimento_id'] ?? null;
+
+            // buscamos o atendimento
+            $atendimento = $this->Atendimento_model->getById($atendimentoId);
+
+            if (! $atendimento) {
+                throw new Exception('Atendimento inválido');
+            }
+
+
+            $this->Atendimento_model->update($atendimentoId, [
+                'data_finalizacao' => date('Y-m-d H:i:s'),
+                'status'           => 'finalizado',
             ]);
 
             //! temos que dispara o Pusher aqui para enviar para o painel

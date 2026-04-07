@@ -45,7 +45,7 @@ class Atendimento_model extends CI_Model
         $this->db->order_by('data_entrada', 'ASC');
         $this->db->limit($limit);
         return $this->db
-            ->where('status', 'aguardando') // aguardando
+            ->where('status', 'triado') // aguardando
             ->where('classificacao_risco_id !=', null) // já classificado
             ->where('sala_id', null) // sem sala
             ->get($this->table)
@@ -72,7 +72,7 @@ class Atendimento_model extends CI_Model
         $this->db->limit($limit);
 
         return $this->db
-        // data_chamada tem que ser hoje
+            // data_chamada tem que ser hoje
             ->where('data_chamada', date('Y-m-d'))
             ->where('status', 'chamando') // que foram chamados
             ->get($this->table)
@@ -80,7 +80,30 @@ class Atendimento_model extends CI_Model
     }
 
     /**
-     * Recupera os atendimentos mais recentes
+     * Recupera os atendimentos que estão aguardando triagem
+     */
+    public function aguardando(int $limit = 10)
+    {
+        // fazemos o join com a tabela de classificacoes
+        // e salas
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        return $this->db->order_by('data_entrada', 'ASC')
+            ->limit($limit)
+            ->where('status', 'aguardando') //! aguardando triagem
+            ->get($this->table)
+            ->result();
+    }
+
+    /**
+     * Recupera os atendimentos mais recentes que já foram chamados
      */
     public function latest(int $limit = 5)
     {
@@ -97,7 +120,7 @@ class Atendimento_model extends CI_Model
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
         return $this->db->order_by('data_entrada', 'ASC')
             ->limit($limit)
-            ->where('status', 'chamando') //! que ainda não foram atendidos
+            ->where('status', 'chamando') //! que foram chamados
             ->get($this->table)
             ->result();
     }

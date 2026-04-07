@@ -50,7 +50,7 @@ async function carregarClassificacoesRisco() {
 async function carregarUltimasChamadas() {
 
     try {
-        const chamadas = await apiRequest('/api/atendimentos/latest');
+        const chamadas = await apiRequest('/api/atendimentos/aguardando');
 
         const container = $('#listaChamadas');
         container.empty();
@@ -59,7 +59,7 @@ async function carregarUltimasChamadas() {
             container.html(`
                 <div class="ultimos-chamados-vazio py-5">
                     <i class="fas fa-tv fa-4x text-muted mb-3"></i>
-                    <p class="text-muted mb-0">Nenhuma chamada recente</p>
+                    <p class="text-muted mb-0">Nenhum atendimento aguardando triagem</p>
                 </div>
             `);
             return;

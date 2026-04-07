@@ -164,7 +164,7 @@ async function chamarPacienteEspecifico(senhaId) {
 
         if (atendimento) {
             console.log(atendimento);
-            senhaAtual = atendimento.numero_senha;
+            senhaAtual = atendimento;
             atualizarProximoPaciente(atendimento);
             chamarPaciente();
         }
@@ -182,10 +182,11 @@ async function iniciarAtendimento() {
         return;
     }
 
+    console.log(senhaAtual);
+
     try {
-        await apiRequest(`/api/senhas/${senhaAtual.id}`, 'PUT', {
-            status: 'atendendo',
-            data_atendimento: new Date().toISOString()
+        await apiRequest(`/api/atendimentos/iniciar`, 'PUT', {
+            atendimento_id: senhaAtual.id,
         });
 
         senhaEmAtendimento = senhaAtual;
@@ -204,6 +205,7 @@ async function iniciarAtendimento() {
         atualizarFila();
     } catch (error) {
         console.error('Erro ao iniciar atendimento:', error);
+        exibirNotificacao(error.message || 'Erro ao iniciar atendimento', 'danger');
     }
 }
 
@@ -216,9 +218,8 @@ async function finalizarAtendimento() {
     }
 
     try {
-        await apiRequest(`/api/senhas/${senhaEmAtendimento.id}`, 'PUT', {
-            status: 'finalizado',
-            data_finalizacao: new Date().toISOString()
+        await apiRequest(`/api/atendimentos/finalizar`, 'PUT', {
+            atendimento_id: senhaEmAtendimento.id,
         });
 
         exibirNotificacao('Atendimento finalizado!', 'success');
