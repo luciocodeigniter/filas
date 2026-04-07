@@ -254,24 +254,22 @@ async function atualizarHistorico() {
         }
 
         chamadas.forEach(chamada => {
-            if (!chamada.senha) return;
 
-            const classificacao = getClassificacao(chamada.senha.classificacao_risco_id);
-            const consultorio = chamada.consultorio;
+            if (!chamada.numero_senha) return;
 
             const item = $(`
                 <div class="list-group-item list-group-item-action list-group-item-chamada">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>${chamada.senha.numero_senha}</strong> - ${chamada.senha.nome_paciente}
+                            <strong>${chamada.numero_senha}</strong> - ${chamada.nome_paciente}
                             <br>
                             <small class="text-muted">
-                                <i class="fas fa-door-open"></i> ${consultorio.nome}
+                                <i class="fas fa-door-open"></i> ${chamada.sala_nome}
                                 <span class="ms-2">${formatarHora(chamada.data_chamada)}</span>
                             </small>
                         </div>
-                        <span class="badge ${getClasseClassificacao(chamada.senha.classificacao_risco_id)}">
-                            ${classificacao.nome}
+                        <span class="badge ${getClasseClassificacao(chamada.classificacao_cor)}">
+                            ${chamada.classificacao_nome}
                         </span>
                     </div>
                 </div>

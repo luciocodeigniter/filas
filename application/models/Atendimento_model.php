@@ -72,9 +72,9 @@ class Atendimento_model extends CI_Model
         $this->db->limit($limit);
 
         return $this->db
-            // data_chamada tem que ser hoje
-            ->where('data_chamada', date('Y-m-d'))
-            ->where('status', 'chamando') // que foram chamados
+            // data_chamada tem que ser hoje sem hora YYYY-MM-DD
+            ->where('DATE(data_chamada)', date('Y-m-d'))
+            // ->where('status', 'chamando') // que foram chamados
             ->get($this->table)
             ->result();
     }
