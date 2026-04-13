@@ -176,4 +176,31 @@ class Atendimento_model extends CI_Model
 
         return $novaSenha;
     }
+
+    /**
+     * Recupera último atendimento chamado na data de hoje
+     */
+    public function ultimo()
+    {
+        // fazemos o join com a tabela de classificacoes
+        // e salas
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+
+        return $this->db
+            // data_chamada tem que ser hoje sem hora YYYY-MM-DD
+            ->where('DATE(data_chamada)', date('Y-m-d'))
+            // ->where('status', 'chamando') // que foram chamados
+            ->get($this->table)
+
+            // recupera com array
+            ->row_array() ?? [];
+    }
 }

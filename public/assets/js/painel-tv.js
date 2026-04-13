@@ -7,19 +7,19 @@
 
 let ultimaChamadaId = null;
 
-$(document).ready(function() {
+$(document).ready(function () {
     // Carrega painel ao iniciar
     atualizarPainel();
     atualizarFilaEspera();
     atualizarUltimasChamadasPainel();
-    
+
     // Atualização automática mais frequente (3 segundos)
     setInterval(() => {
         atualizarPainel();
         atualizarFilaEspera();
         atualizarUltimasChamadasPainel();
     }, 3000);
-    
+
     // Mensagem rotativa no rodapé
     iniciarMensagensRotativas();
 });
@@ -28,30 +28,20 @@ $(document).ready(function() {
 
 function atualizarPainel() {
     buscarUltimaChamada().then(chamada => {
-        if (!chamada || !chamada.senha) {
+        if (!chamada || !chamada.numero_senha) {
             exibirMensagemAguardando();
             return;
         }
-        
-        // Verifica se é uma nova chamada
+
         const isNovaChamada = ultimaChamadaId !== chamada.id;
-        
+
         if (isNovaChamada) {
             ultimaChamadaId = chamada.id;
-            
-            // Exibe overlay de chamada
             exibirOverlayChamada(chamada);
-            
-            // Reproduz som
             reproduzirSom();
-            
-            // Após 5 segundos, esconde overlay
-            setTimeout(() => {
-                esconderOverlayChamada();
-            }, CONFIG.tempoOverlayChamada);
+            setTimeout(() => esconderOverlayChamada(), CONFIG.tempoOverlayChamada);
         }
-        
-        // Atualiza informações na tela
+
         exibirChamadaAtual(chamada);
     });
 }
@@ -59,33 +49,24 @@ function atualizarPainel() {
 // ============= EXIBIR CHAMADA ATUAL =============
 
 function exibirChamadaAtual(chamada) {
-    const senha = chamada.senha;
-    const classificacao = getClassificacao(senha.classificacao_risco_id);
-    const consultorio = getConsultorio(chamada.consultorio_id);
-    
-    // Atualiza número da senha
-    $('#senhaAtual').text(senha.numero_senha);
-    $('#senhaAtual').addClass('animate__animated animate__pulse');
-    
-    // Atualiza nome do paciente
-    $('#nomeAtual').text(senha.nome_paciente.toUpperCase());
-    
-    // Atualiza classificação
+    // Número da senha
+    $('#senhaAtual')
+        .text(chamada.numero_senha)
+        .addClass('animate__animated animate__pulse');
+
+    // Nome do paciente
+    $('#nomeAtual').text(chamada.nome_paciente.toUpperCase());
+
+    // Classificação — campos já vêm joinados do PHP
     const badge = $('#classificacaoAtual');
-    badge.text(classificacao.nome);
+    badge.text(chamada.classificacao_nome);
     badge.removeClass();
-    badge.addClass('badge classificacao-badge');
-    badge.addClass(getClasseClassificacao(senha.classificacao_risco_id));
-    
-    // Atualiza sala
-    $('#consultorioAtual').html(`
-        <i class="fas fa-door-open"></i> ${consultorio.nome}
-    `);
-    
-    // Remove animação após completar
-    setTimeout(() => {
-        $('#senhaAtual').removeClass('animate__pulse');
-    }, 1000);
+    badge.addClass(`badge classificacao-badge ${getClasseClassificacao(chamada.classificacao_cor)}`);
+
+    // Sala — campo já vem joinado do PHP
+    $('#consultorioAtual').html(`<i class="fas fa-door-open"></i> ${chamada.sala_nome}`);
+
+    setTimeout(() => $('#senhaAtual').removeClass('animate__pulse'), 1000);
 }
 
 // ============= EXIBIR MENSAGEM AGUARDANDO =============
@@ -100,11 +81,8 @@ function exibirMensagemAguardando() {
 // ============= OVERLAY DE CHAMADA =============
 
 function exibirOverlayChamada(chamada) {
-    const consultorio = getConsultorio(chamada.consultorio_id);
-    
-    $('#overlayNumero').text(chamada.senha.numero_senha);
-    $('#overlayConsultorio').text(consultorio.nome.toUpperCase());
-    
+    $('#overlayNumero').text(chamada.numero_senha);
+    $('#overlayConsultorio').text(chamada.sala_nome.toUpperCase());
     $('#chamadaOverlay').addClass('active');
 }
 
@@ -118,7 +96,7 @@ function atualizarFilaEspera() {
     buscarSenhas({ status: 'aguardando' }).then(senhas => {
         const tbody = $('#filaEspera');
         tbody.empty();
-        
+
         if (senhas.length === 0) {
             tbody.html(`
                 <tr>
@@ -129,14 +107,14 @@ function atualizarFilaEspera() {
             `);
             return;
         }
-        
+
         // Mostra apenas os primeiros 5
         const senhasExibir = senhas.slice(0, 5);
-        
+
         senhasExibir.forEach((senha, index) => {
             const classificacao = getClassificacao(senha.classificacao_risco_id);
             const tempoEspera = calcularTempoDecorrido(senha.data_entrada);
-            
+
             const row = $(`
                 <tr>
                     <td><strong>${senha.numero_senha}</strong></td>
@@ -148,10 +126,10 @@ function atualizarFilaEspera() {
                     <td><small>${formatarTempoEspera(tempoEspera)}</small></td>
                 </tr>
             `);
-            
+
             tbody.append(row);
         });
-        
+
         // Se houver mais de 5, adiciona linha indicando
         if (senhas.length > 5) {
             tbody.append(`
@@ -171,7 +149,7 @@ function atualizarUltimasChamadasPainel() {
     buscarUltimasChamadas(5).then(chamadas => {
         const container = $('#ultimasChamadas');
         container.empty();
-        
+
         if (chamadas.length === 0) {
             container.html(`
                 <div class="text-center text-muted py-3">
@@ -180,31 +158,26 @@ function atualizarUltimasChamadasPainel() {
             `);
             return;
         }
-        
+
         chamadas.forEach((chamada, index) => {
-            if (!chamada.senha) return;
-            
-            const classificacao = getClassificacao(chamada.senha.classificacao_risco_id);
-            const consultorio = getConsultorio(chamada.consultorio_id);
-            
+            if (!chamada.numero_senha) return;
+
             const item = $(`
                 <div class="list-group-item ${index === 0 ? 'list-group-item-primary' : ''}">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="flex-grow-1">
-                            <strong>${chamada.senha.numero_senha}</strong>
+                            <strong>${chamada.numero_senha}</strong>
                             <i class="fas fa-arrow-right mx-2"></i>
-                            <strong>${consultorio.nome}</strong>
+                            <strong>${chamada.sala_nome}</strong>
                         </div>
-                        <span class="badge ${getClasseClassificacao(chamada.senha.classificacao_risco_id)}">
-                            ${classificacao.nome}
+                        <span class="badge ${getClasseClassificacao(chamada.classificacao_cor)}">
+                            ${chamada.classificacao_nome}
                         </span>
                     </div>
-                    <small class="text-muted">
-                        ${formatarHora(chamada.data_chamada)}
-                    </small>
+                    <small class="text-muted">${formatarHora(chamada.data_chamada)}</small>
                 </div>
             `);
-            
+
             container.append(item);
         });
     });
@@ -212,40 +185,46 @@ function atualizarUltimasChamadasPainel() {
 
 // ============= MENSAGENS ROTATIVAS =============
 
-function getMensagensPainel() {
+async function getMensagensPainel() {
     try {
-        const msgs = JSON.parse(localStorage.getItem('mensagens') || '[]');
-        return msgs.filter(m => m.ativo !== false).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+        const result = await apiRequest('/api/mensagens?ativo=true');
+        const mensagens = result.data || result || [];
+        return mensagens
+            .filter(m => m.ativo !== false)
+            .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
     } catch (e) {
+        console.error('Erro ao buscar mensagens:', e);
         return [];
     }
 }
 
 let indiceMensagem = 0;
 
-function iniciarMensagensRotativas() {
-    function exibirProximaMensagem() {
-        const mensagens = getMensagensPainel().map(m => m.conteudo);
-        
+async function iniciarMensagensRotativas() {
+    async function exibirProximaMensagem() {
+        const mensagens = (await getMensagensPainel()).map(m => m.conteudo);
+
         if (mensagens.length === 0) {
             $('#mensagemRodape').text('Bem-vindo ao nosso atendimento. Obrigado pela compreensão!');
             return;
         }
-        
+
         indiceMensagem = (indiceMensagem + 1) % mensagens.length;
-        
-        $('#mensagemRodape').fadeOut(500, function() {
+
+        $('#mensagemRodape').fadeOut(500, function () {
             $(this).text(mensagens[indiceMensagem]).fadeIn(500);
         });
     }
-    
-    // Exibe primeira mensagem
-    const mensagens = getMensagensPainel().map(m => m.conteudo);
+
+    // Exibe primeira mensagem imediatamente
+    const mensagens = (await getMensagensPainel()).map(m => m.conteudo);
     if (mensagens.length > 0) {
         $('#mensagemRodape').text(mensagens[0]);
+    } else {
+        $('#mensagemRodape').text('Bem-vindo ao nosso atendimento. Obrigado pela compreensão!');
     }
-    
-    setInterval(exibirProximaMensagem, 10000); // Troca a cada 10 segundos
+
+    setInterval(exibirProximaMensagem, 10000);
 }
 
 // ============= TELA CHEIA =============
@@ -275,10 +254,10 @@ function simularChamada() {
             alert('Nenhuma senha aguardando para simular!');
             return;
         }
-        
+
         const senhaAleatoria = senhas[Math.floor(Math.random() * senhas.length)];
         const consultorioAleatorio = Math.floor(Math.random() * 5) + 1;
-        
+
         // Atualiza status
         atualizarSenha(senhaAleatoria.id, {
             status: 'chamando',
@@ -288,7 +267,7 @@ function simularChamada() {
         }).then(() => {
             // Registra chamada
             registrarChamada(senhaAleatoria.id, consultorioAleatorio, 1);
-            
+
             // Força atualização
             setTimeout(() => {
                 atualizarPainel();
@@ -301,7 +280,7 @@ function simularChamada() {
 // ============= ENTRAR EM TELA CHEIA AUTOMATICAMENTE =============
 
 // Opcional: entra em tela cheia ao clicar na tela
-$(document).one('click', function() {
+$(document).one('click', function () {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => {
             console.log('Tela cheia não disponível:', err);

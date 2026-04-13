@@ -285,6 +285,7 @@ async function atualizarHistorico() {
 // ============= ATUALIZAR ESTATÍSTICAS =============
 
 async function atualizarEstatisticasConsultorio() {
+    return; // ainda não implementado
     try {
         const stats = await apiRequest('/api/estatisticas');
         $('#totalAtendimentos').text(stats.finalizado);

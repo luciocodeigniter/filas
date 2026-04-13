@@ -23,22 +23,6 @@
 							</div>
 						</div>
 
-						<!-- Módulo Atendimento -->
-						<div class="col">
-							<div class="card module-card h-100 border-success" onclick="window.location.href='<?php echo site_url('atendimentos'); ?>'">
-								<div class="card-body text-center py-3">
-									<div class="module-icon mb-2">
-										<i class="fas fa-headset fa-4x text-success"></i>
-									</div>
-									<h5 class="card-title">Atendimento</h5>
-									<p class="card-text small">Visualizar fila e chamar próximo</p>
-									<button class="btn btn-success btn-sm mt-2">
-										<i class="fas fa-arrow-right"></i> Acessar
-									</button>
-								</div>
-							</div>
-						</div>
-
 						<!-- Módulo Triagem -->
 						<div class="col">
 							<div class="card module-card h-100 border-info" onclick="window.location.href='<?php echo site_url('triagem'); ?>'">
@@ -49,6 +33,22 @@
 									<h5 class="card-title">Triagem</h5>
 									<p class="card-text small">Classificar prioridade de atendimento</p>
 									<button class="btn btn-info btn-sm mt-2">
+										<i class="fas fa-arrow-right"></i> Acessar
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<!-- Módulo Atendimento -->
+						<div class="col">
+							<div class="card module-card h-100 border-success" onclick="window.location.href='<?php echo site_url('atendimentos'); ?>'">
+								<div class="card-body text-center py-3">
+									<div class="module-icon mb-2">
+										<i class="fas fa-headset fa-4x text-success"></i>
+									</div>
+									<h5 class="card-title">Atendimento</h5>
+									<p class="card-text small">Visualizar fila e chamar próximo</p>
+									<button class="btn btn-success btn-sm mt-2">
 										<i class="fas fa-arrow-right"></i> Acessar
 									</button>
 								</div>

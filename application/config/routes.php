@@ -70,6 +70,7 @@ $route['administrativo/mensagens'] = 'Mensagens/index';
 $route['recepcao'] = 'Recepcao/index';
 $route['triagem'] = 'Triagem/index';
 $route['atendimentos'] = 'Atendimentos/index';
+$route['painel'] = 'Painel/index';
 
 // rotas de api
 $route['api/municipios'] = 'api/municipios/index';
@@ -98,3 +99,10 @@ $route['api/mensagens/(:num)'] = 'api/mensagens/show/$1';
 $route['api/atendimentos'] = 'api/atendimentos/index';
 $route['api/atendimentos/latest'] = 'api/atendimentos/latest';
 $route['api/atendimentos/(:num)'] = 'api/atendimentos/show/$1';
+
+// painel
+$route['api/painel'] = 'api/painel/index';
+$route['api/painel/chamados'] = 'api/painel/chamados';
+$route['api/painel/aguardando'] = 'api/painel/aguardando';
+$route['api/painel/ultima'] = 'api/painel/ultima';
+
