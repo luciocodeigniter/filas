@@ -182,8 +182,6 @@ class Atendimento_model extends CI_Model
      */
     public function ultimo()
     {
-        // fazemos o join com a tabela de classificacoes
-        // e salas
         $this->db->select([
             'atendimentos.*',
             'classificacoes_risco.nome as classificacao_nome',
@@ -195,12 +193,11 @@ class Atendimento_model extends CI_Model
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
 
         return $this->db
-            // data_chamada tem que ser hoje sem hora YYYY-MM-DD
             ->where('DATE(data_chamada)', date('Y-m-d'))
-            // ->where('status', 'chamando') // que foram chamados
+            ->where('status', 'chamando') // apenas os que foram chamados
+            ->order_by('data_chamada', 'DESC') // mais recente primeiro
+            ->limit(1)
             ->get($this->table)
-
-            // recupera com array
             ->row_array() ?? [];
     }
 }

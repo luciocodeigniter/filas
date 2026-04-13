@@ -8,21 +8,56 @@
 let ultimaChamadaId = null;
 
 $(document).ready(function () {
-    // Carrega painel ao iniciar
-    atualizarPainel();
-    atualizarFilaEspera();
-    atualizarUltimasChamadasPainel();
-
-    // Atualização automática mais frequente (3 segundos)
-    setInterval(() => {
-        atualizarPainel();
-        atualizarFilaEspera();
-        atualizarUltimasChamadasPainel();
-    }, 3000);
-
-    // Mensagem rotativa no rodapé
-    iniciarMensagensRotativas();
+    exibirTelaInicio();
 });
+
+// ============= TELA DE INÍCIO (GARANTE INTERAÇÃO ANTES DO PAINEL) =============
+
+function exibirTelaInicio() {
+    const overlay = $(`
+        <div id="overlayInicio" style="
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+        ">
+            <i class="fas fa-tv fa-4x text-white mb-4"></i>
+            <h2 class="text-white mb-2">Painel de Senhas</h2>
+            <p class="text-white-50">Clique em qualquer lugar para iniciar</p>
+        </div>
+    `);
+
+    $('body').append(overlay);
+
+    overlay.one('click', function () {
+        console.log('[Painel] Interação detectada, iniciando painel...');
+
+        // Inicializa áudio após interação do usuário
+        inicializarAudio();
+
+        // Entra em tela cheia
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log('[Painel] Tela cheia não disponível:', err);
+        });
+
+        // Remove overlay e inicia painel
+        overlay.fadeOut(300, function () {
+            overlay.remove();
+
+            atualizarPainel();
+            atualizarFilaEspera();
+            atualizarUltimasChamadasPainel();
+            iniciarMensagensRotativas();
+
+            setInterval(() => {
+                atualizarPainel();
+                atualizarFilaEspera();
+                atualizarUltimasChamadasPainel();
+            }, 3000);
+        });
+    });
+}
 
 // ============= ATUALIZAR PAINEL PRINCIPAL =============
 
@@ -33,10 +68,10 @@ function atualizarPainel() {
             return;
         }
 
-        const isNovaChamada = ultimaChamadaId !== chamada.id;
+        const isNovaChamada = ultimaChamadaId !== String(chamada.id);
 
         if (isNovaChamada) {
-            ultimaChamadaId = chamada.id;
+            ultimaChamadaId = String(chamada.id);
             exibirOverlayChamada(chamada);
             reproduzirSom();
             setTimeout(() => esconderOverlayChamada(), CONFIG.tempoOverlayChamada);
@@ -49,21 +84,17 @@ function atualizarPainel() {
 // ============= EXIBIR CHAMADA ATUAL =============
 
 function exibirChamadaAtual(chamada) {
-    // Número da senha
     $('#senhaAtual')
         .text(chamada.numero_senha)
         .addClass('animate__animated animate__pulse');
 
-    // Nome do paciente
     $('#nomeAtual').text(chamada.nome_paciente.toUpperCase());
 
-    // Classificação — campos já vêm joinados do PHP
     const badge = $('#classificacaoAtual');
     badge.text(chamada.classificacao_nome);
     badge.removeClass();
     badge.addClass(`badge classificacao-badge ${getClasseClassificacao(chamada.classificacao_cor)}`);
 
-    // Sala — campo já vem joinado do PHP
     $('#consultorioAtual').html(`<i class="fas fa-door-open"></i> ${chamada.sala_nome}`);
 
     setTimeout(() => $('#senhaAtual').removeClass('animate__pulse'), 1000);
@@ -108,19 +139,17 @@ function atualizarFilaEspera() {
             return;
         }
 
-        // Mostra apenas os primeiros 5
         const senhasExibir = senhas.slice(0, 5);
 
-        senhasExibir.forEach((senha, index) => {
-            const classificacao = getClassificacao(senha.classificacao_risco_id);
+        senhasExibir.forEach((senha) => {
             const tempoEspera = calcularTempoDecorrido(senha.data_entrada);
 
             const row = $(`
                 <tr>
                     <td><strong>${senha.numero_senha}</strong></td>
                     <td>
-                        <span class="badge ${getClasseClassificacao(senha.classificacao_risco_id)}">
-                            ${classificacao.nome}
+                        <span class="badge ${getClasseClassificacao(senha.classificacao_cor)}">
+                            ${senha.classificacao_nome}
                         </span>
                     </td>
                     <td><small>${formatarTempoEspera(tempoEspera)}</small></td>
@@ -130,7 +159,6 @@ function atualizarFilaEspera() {
             tbody.append(row);
         });
 
-        // Se houver mais de 5, adiciona linha indicando
         if (senhas.length > 5) {
             tbody.append(`
                 <tr>
@@ -216,7 +244,6 @@ async function iniciarMensagensRotativas() {
         });
     }
 
-    // Exibe primeira mensagem imediatamente
     const mensagens = (await getMensagensPainel()).map(m => m.conteudo);
     if (mensagens.length > 0) {
         $('#mensagemRodape').text(mensagens[0]);
@@ -248,7 +275,6 @@ function toggleControles() {
 // ============= SIMULAÇÃO DE CHAMADA (TESTE) =============
 
 function simularChamada() {
-    // Busca uma senha aguardando aleatória para simular
     buscarSenhas({ status: 'aguardando' }).then(senhas => {
         if (senhas.length === 0) {
             alert('Nenhuma senha aguardando para simular!');
@@ -258,17 +284,14 @@ function simularChamada() {
         const senhaAleatoria = senhas[Math.floor(Math.random() * senhas.length)];
         const consultorioAleatorio = Math.floor(Math.random() * 5) + 1;
 
-        // Atualiza status
         atualizarSenha(senhaAleatoria.id, {
             status: 'chamando',
             data_chamada: new Date().toISOString(),
             consultorio_id: consultorioAleatorio,
             medico_id: 1
         }).then(() => {
-            // Registra chamada
             registrarChamada(senhaAleatoria.id, consultorioAleatorio, 1);
 
-            // Força atualização
             setTimeout(() => {
                 atualizarPainel();
                 atualizarUltimasChamadasPainel();
@@ -277,42 +300,27 @@ function simularChamada() {
     });
 }
 
-// ============= ENTRAR EM TELA CHEIA AUTOMATICAMENTE =============
-
-// Opcional: entra em tela cheia ao clicar na tela
-$(document).one('click', function () {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.log('Tela cheia não disponível:', err);
-        });
-    }
-});
-
 // ============= PREVENIR SLEEP DO DISPLAY =============
 
-// Wake Lock API para manter a tela ligada
 let wakeLock = null;
 
 async function manterTelaLigada() {
     try {
         if ('wakeLock' in navigator) {
             wakeLock = await navigator.wakeLock.request('screen');
-            console.log('Wake Lock ativo - tela permanecerá ligada');
+            console.log('[Painel] Wake Lock ativo - tela permanecerá ligada');
         }
     } catch (err) {
-        console.log('Wake Lock não disponível:', err);
+        console.log('[Painel] Wake Lock não disponível:', err);
     }
 }
 
-// Ativa ao carregar
 manterTelaLigada();
 
-// Reativa se a página voltar ao foco
 document.addEventListener('visibilitychange', async () => {
     if (wakeLock !== null && document.visibilityState === 'visible') {
         await manterTelaLigada();
     }
 });
 
-console.log('Painel de TV carregado com sucesso!');
-console.log('Pressione qualquer tecla para ativar tela cheia');
+console.log('[Painel] Painel de TV carregado. Aguardando interação do usuário...');

@@ -87,22 +87,39 @@ function exibirNotificacao(mensagem, tipo = 'success') {
     setTimeout(() => toast.fadeOut(() => toast.remove()), 5000);
 }
 
+// ============= ÁUDIO =============
+
+let audioContext = null;
+
+function inicializarAudio() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('[Audio] AudioContext criado. Estado:', audioContext.state);
+    }
+
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('[Audio] AudioContext resumido. Estado:', audioContext.state);
+        });
+    }
+}
+
 function reproduzirSom() {
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const audio = document.getElementById('audioChamada');
 
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 800;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.5);
+        if (!audio) {
+            console.warn('[Audio] Elemento #audioChamada não encontrado no HTML.');
+            return;
+        }
+
+        audio.currentTime = 0; // Reinicia caso já esteja tocando
+        audio.play()
+            .then(() => console.log('[Audio] Som reproduzido com sucesso.'))
+            .catch(e => console.error('[Audio] Erro ao reproduzir:', e));
+
     } catch (e) {
-        console.log('Áudio não suportado');
+        console.error('[Audio] Erro inesperado:', e);
     }
 }
 
