@@ -53,7 +53,7 @@ class Atendimento_model extends CI_Model
     }
 
     /**
-     * Recupera os atendimentos que já foram chamados na data de hoje
+     * Recupera os atendimentos que já foram chamados
      */
     public function chamados(int $limit = 10)
     {
@@ -73,7 +73,7 @@ class Atendimento_model extends CI_Model
 
         return $this->db
             // data_chamada tem que ser hoje sem hora YYYY-MM-DD
-            ->where('DATE(data_chamada)', date('Y-m-d'))
+            // ->where('DATE(data_chamada)', date('Y-m-d'))
             // ->where('status', 'chamando') // que foram chamados
             ->get($this->table)
             ->result();
@@ -193,7 +193,7 @@ class Atendimento_model extends CI_Model
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
 
         return $this->db
-            ->where('DATE(data_chamada)', date('Y-m-d'))
+            // ->where('DATE(data_chamada)', date('Y-m-d'))
             ->where('status', 'chamando') // apenas os que foram chamados
             ->order_by('data_chamada', 'DESC') // mais recente primeiro
             ->limit(1)
