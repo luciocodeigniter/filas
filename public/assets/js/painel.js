@@ -6,6 +6,7 @@
  */
 
 let ultimaChamadaId = null;
+let pusherIniciado = false;
 
 $(document).ready(function () {
     exibirTelaInicio();
@@ -45,17 +46,48 @@ function exibirTelaInicio() {
         overlay.fadeOut(300, function () {
             overlay.remove();
 
-            atualizarPainel();
+            atualizarPainel();           // Busca inicial no servidor (1x)
             atualizarFilaEspera();
             atualizarUltimasChamadasPainel();
             iniciarMensagensRotativas();
+            iniciarPusher();             // Inicia Pusher após interação do usuário
 
             setInterval(() => {
-                atualizarPainel();
+                // atualizarPainel() removido — agora é via Pusher
                 atualizarFilaEspera();
                 atualizarUltimasChamadasPainel();
             }, 3000);
         });
+    });
+}
+
+// ============= PUSHER =============
+
+function iniciarPusher() {
+    if (pusherIniciado) return;
+    pusherIniciado = true;
+
+    const pusher = new Pusher(document.getElementById('pusher_key').value, {
+        cluster: document.getElementById('pusher_cluster').value
+    });
+
+    const channel = pusher.subscribe('painel');
+
+    channel.bind('nova-chamada', function (chamada) {
+        console.log('[Pusher] Nova chamada recebida:', chamada);
+
+        const isNovaChamada = ultimaChamadaId !== String(chamada.id);
+
+        if (isNovaChamada) {
+            ultimaChamadaId = String(chamada.id);
+            exibirOverlayChamada(chamada);
+            reproduzirSom();
+            falarChamada(chamada);
+            setTimeout(() => esconderOverlayChamada(), 6000);
+        }
+
+        exibirChamadaAtual(chamada);
+        atualizarUltimasChamadasPainel();
     });
 }
 
@@ -74,7 +106,7 @@ function atualizarPainel() {
             ultimaChamadaId = String(chamada.id);
             exibirOverlayChamada(chamada);
             reproduzirSom();
-            falarChamada(chamada);  // ← ADICIONE ESTA LINHA
+            falarChamada(chamada);
             setTimeout(() => esconderOverlayChamada(), 6000);
         }
 
@@ -349,14 +381,14 @@ function falarChamada(chamada) {
 
     const utterance = new SpeechSynthesisUtterance(texto);
     utterance.lang = 'pt-BR';
-    utterance.rate = 0.95;  // Levemente mais lento para clareza
+    utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.volume = 1;
 
-    // Aguarda o som tocar antes de falar (evita sobreposição)
+    // Aguarda o som tocar antes de falar
     setTimeout(() => {
         window.speechSynthesis.speak(utterance);
-    }, 3000); // Ajuste conforme a duração do seu som
+    }, 3000);
 }
 
 console.log('[Painel] Painel de TV carregado. Aguardando interação do usuário...');

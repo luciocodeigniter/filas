@@ -151,10 +151,16 @@
 		<source src="<?php echo base_url('public/'); ?>assets/audio/chamada.mp3" type="audio/mpeg">
 	</audio>
 
+	<!-- Usados para Pusher -->
+	<input type="hidden" id="pusher_key" value="<?php echo $pusher_key; ?>">
+	<input type="hidden" id="pusher_cluster" value="<?php echo $pusher_cluster; ?>">
+
+	<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 	<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="<?php echo base_url('public/'); ?>assets/js/script.js"></script>
 	<script src="<?php echo base_url('public/'); ?>assets/js/painel.js"></script>
+
 </body>
 
 </html>
