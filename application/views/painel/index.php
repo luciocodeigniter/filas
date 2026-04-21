@@ -60,6 +60,11 @@
 								</h1>
 							</div>
 						</div>
+
+						<div class="guiche-display mt-3" id="guicheDisplay" style="display:none;">
+							<h3 class="text-muted mb-2">Guichê</h3>
+							<h1 class="display-3 text-warning fw-bold" id="guicheAtual">---</h1>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -124,6 +129,7 @@
 			<h2 class="text-white" id="overlayNome"></h2> <!-- ← NOVO -->
 			<h2 class="text-white" id="overlayConsultorio">Sala 1</h2>
 			<h2 class="text-white opacity-75" id="overlayTipo"></h2> <!-- ← NOVO -->
+			<h3 class="text-white" id="overlayGuiche"></h3>
 		</div>
 	</div>
 

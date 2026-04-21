@@ -133,10 +133,7 @@ function atualizarPainel() {
 // ============= EXIBIR CHAMADA ATUAL =============
 
 function exibirChamadaAtual(chamada) {
-    $('#senhaAtual')
-        .text(chamada.numero_senha)
-        .addClass('animate__animated animate__pulse');
-
+    $('#senhaAtual').text(chamada.numero_senha).addClass('animate__animated animate__pulse');
     $('#nomeAtual').text(chamada.nome_paciente.toUpperCase());
 
     const badge = $('#classificacaoAtual');
@@ -145,6 +142,14 @@ function exibirChamadaAtual(chamada) {
     badge.addClass(`badge classificacao-badge ${getClasseClassificacao(chamada.classificacao_cor)}`);
 
     $('#consultorioAtual').html(`<i class="fas fa-door-open"></i> ${chamada.sala_nome}`);
+
+    // ← NOVO
+    if (chamada.guiche) {
+        $('#guicheAtual').text(chamada.guiche);
+        $('#guicheDisplay').show();
+    } else {
+        $('#guicheDisplay').hide();
+    }
 
     setTimeout(() => $('#senhaAtual').removeClass('animate__pulse'), 1000);
 }
@@ -165,6 +170,7 @@ function exibirOverlayChamada(chamada) {
     $('#overlayNome').text(chamada.nome_paciente.toUpperCase());
     $('#overlayConsultorio').text(chamada.sala_nome.toUpperCase());
     $('#overlayTipo').text('ATENDIMENTO ' + chamada.tipo_atendimento_nome.toUpperCase());
+    $('#overlayGuiche').text(chamada.guiche ? 'GUICHÊ ' + chamada.guiche : ''); // ← NOVO
     $('#chamadaOverlay').addClass('active');
 }
 
@@ -248,6 +254,7 @@ function atualizarUltimasChamadasPainel() {
                             <strong>${chamada.numero_senha}</strong>
                             <i class="fas fa-arrow-right mx-2"></i>
                             <strong>${chamada.sala_nome}</strong>
+                            ${chamada.guiche ? `<span class="text-muted ms-1">· Guichê ${chamada.guiche}</span>` : ''}
                         </div>
                         <span class="badge ${getClasseClassificacao(chamada.classificacao_cor)}">
                             ${chamada.classificacao_nome}
@@ -389,11 +396,12 @@ function falarChamada(chamada) {
     const nome = chamada.nome_paciente || '';
     const sala = chamada.sala_nome || '';
     const tipo = chamada.tipo_atendimento_nome || '';
+    const guiche = chamada.guiche ? `, guichê ${chamada.guiche}` : '';
 
     // Separa as letras da senha para falar corretamente: "S004" → "S, 0, 0, 4"
     const senhaFalada = senha.split('').join(', ');
 
-    const texto = `Atenção! Senha ${senhaFalada}. ${nome}, dirija-se à ${sala}. Atendimento ${tipo}.`;
+    const texto = `Atenção! Senha ${senhaFalada}. ${nome}, dirija-se à ${sala}${guiche}. Atendimento ${tipo}.`;
 
     const utterance = new SpeechSynthesisUtterance(texto);
     utterance.lang = 'pt-BR';

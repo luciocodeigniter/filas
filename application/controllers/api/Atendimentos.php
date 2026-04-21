@@ -198,6 +198,7 @@ class Atendimentos extends CI_Controller
             $atendimentoId   = $input['atendimento_id'] ?? null;
             $salaId          = $input['sala_id'] ?? null;
             $profissionalId  = $input['profissional_id'] ?? null;
+            $guiche          = $input['guiche'] ?? null;
 
             // buscamos o atendimento
             $atendimento = $this->Atendimento_model->getById($atendimentoId);
@@ -225,7 +226,8 @@ class Atendimentos extends CI_Controller
                 'data_chamada'    => date('Y-m-d H:i:s'),
                 'profissional_id' => (int) $profissional->id,
                 'status'          => 'chamando',
-                'sala_id'         => (int) $sala->id
+                'sala_id'         => (int) $sala->id,
+                'guiche'          => (int) $guiche
             ]);
 
             // Busca o atendimento atualizado com todos os dados para o painel

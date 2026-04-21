@@ -126,12 +126,14 @@ async function chamarPaciente() {
 
     const consultorioId = parseInt($('#selectConsultorio').val());
     const medicoId = parseInt($('#selectMedico').val());
+    const guiche = parseInt($('#selectGuiche').val());
 
     try {
         await apiRequest(`/api/atendimentos/chamar`, 'PUT', {
             atendimento_id: senhaAtual.id,
             sala_id: consultorioId,
-            profissional_id: medicoId
+            profissional_id: medicoId,
+            guiche: guiche
         });
 
         const consultorio = await apiRequest(`/api/salas/${consultorioId}`);

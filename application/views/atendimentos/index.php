@@ -55,10 +55,18 @@
 								</select>
 							</div>
 							<div class="col-md-3">
+								<label for="guiche" class="form-label">Guichê</label>
+								<select id="selectGuiche" class="form-select">
+									<?php for ($i = 1; $i <= 10; $i++): ?>
+										<option value="<?= $i ?>">Guichê <?= $i ?></option>
+									<?php endfor; ?>
+								</select>
+							</div>
+							<div class="col-md-3">
 								<label class="form-label">Aguardando na fila:</label>
 								<h3 class="text-primary mb-0" id="totalFila">0</h3>
 							</div>
-							<div class="col-md-3">
+							<div class="col-md-12 mt-3">
 								<label class="form-label">Atendimentos Hoje:</label>
 								<h3 class="text-success mb-0" id="totalAtendimentos">0</h3>
 							</div>
