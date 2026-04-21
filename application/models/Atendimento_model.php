@@ -76,6 +76,7 @@ class Atendimento_model extends CI_Model
         $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         $this->db->order_by('data_entrada', 'ASC');
         $this->db->limit($limit);
+        $this->db->where('status', 'chamando');
         return $this->db
             ->get($this->table)
             ->result();

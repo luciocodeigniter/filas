@@ -52,7 +52,8 @@ class Atendimentos extends CI_Controller
     /**
      * GET /api/atendimentos/triados
      * 
-     * Recupera os atendimentos que já passaram pela triagem e estão aguardando definição de sala
+     * Recupera os atendimentos que já passaram pela triagem e estão aguardando definição de sala.
+     * Ou seja, está aguardando serem chamados pelo médico
      */
     public function triados()
     {
@@ -166,6 +167,12 @@ class Atendimentos extends CI_Controller
                 'motivo_principal'       => $motivoPrincipal,
                 'status'                 => 'triado'
             ]);
+
+            // Busca o atendimento atualizado com todos os dados
+            $atendimentoAtualizado = $this->Atendimento_model->getByIdAsArray($atendimentoId);
+
+            // Avisa o painel que a fila foi atualizada
+            $this->pusher_lib->trigger('painel', 'fila-atualizada', $atendimentoAtualizado);
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {

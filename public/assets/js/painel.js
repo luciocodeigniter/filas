@@ -89,6 +89,11 @@ function iniciarPusher() {
         exibirChamadaAtual(chamada);
         atualizarUltimasChamadasPainel();
     });
+
+    channel.bind('fila-atualizada', function (chamada) {
+        console.log('[Pusher] Fila atualizada:', chamada);
+        atualizarFilaEspera();
+    });
 }
 
 // ============= ATUALIZAR PAINEL PRINCIPAL =============
