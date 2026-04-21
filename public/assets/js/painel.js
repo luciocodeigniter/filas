@@ -7,6 +7,9 @@
 
 let ultimaChamadaId = null;
 let pusherIniciado = false;
+let intervalMensagens = null;
+let mensagensCache = [];
+let indiceMensagem = 0;
 
 $(document).ready(function () {
     exibirTelaInicio();
@@ -95,6 +98,12 @@ function iniciarPusher() {
     channel.bind('chamadas-atualizadas', function () {
         console.log('[Pusher] Chamadas atualizadas');
         atualizarUltimasChamadasPainel();
+    });
+
+    // Recebe mensagens atualizadas
+    channel.bind('mensagens-atualizadas', function () {
+        console.log('[Pusher] Mensagens atualizadas');
+        iniciarMensagensRotativas();
     });
 }
 
@@ -268,32 +277,33 @@ async function getMensagensPainel() {
     }
 }
 
-let indiceMensagem = 0;
+
 
 async function iniciarMensagensRotativas() {
-    async function exibirProximaMensagem() {
-        const mensagens = (await getMensagensPainel()).map(m => m.conteudo);
+    if (intervalMensagens) {
+        clearInterval(intervalMensagens);
+        intervalMensagens = null;
+    }
 
-        if (mensagens.length === 0) {
-            $('#mensagemRodape').text('Bem-vindo ao nosso atendimento. Obrigado pela compreensão!');
-            return;
-        }
+    // Busca mensagens do servidor (1x) e cacheia
+    mensagensCache = (await getMensagensPainel()).map(m => m.conteudo);
+    indiceMensagem = 0;
 
-        indiceMensagem = (indiceMensagem + 1) % mensagens.length;
+    $('#mensagemRodape').text(
+        mensagensCache.length > 0
+            ? mensagensCache[0]
+            : 'Bem-vindo ao nosso atendimento. Obrigado pela compreensão!'
+    );
+
+    intervalMensagens = setInterval(function () {
+        if (mensagensCache.length === 0) return;
+
+        indiceMensagem = (indiceMensagem + 1) % mensagensCache.length;
 
         $('#mensagemRodape').fadeOut(500, function () {
-            $(this).text(mensagens[indiceMensagem]).fadeIn(500);
+            $(this).text(mensagensCache[indiceMensagem]).fadeIn(500);
         });
-    }
-
-    const mensagens = (await getMensagensPainel()).map(m => m.conteudo);
-    if (mensagens.length > 0) {
-        $('#mensagemRodape').text(mensagens[0]);
-    } else {
-        $('#mensagemRodape').text('Bem-vindo ao nosso atendimento. Obrigado pela compreensão!');
-    }
-
-    setInterval(exibirProximaMensagem, 10000);
+    }, 10000);
 }
 
 // ============= TELA CHEIA =============

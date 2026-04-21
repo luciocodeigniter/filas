@@ -64,6 +64,8 @@ class Mensagens extends CI_Controller
                 'ativo'    => $input['ativo'] ? 1 : 0
             ]);
 
+            $this->pusher_lib->trigger('painel', 'mensagens-atualizadas', []);
+
             return respond(statusCode: 201, data: $id);
         } catch (\Throwable $e) {
             return respond(statusCode: 500, message: $e->getMessage());
@@ -90,6 +92,8 @@ class Mensagens extends CI_Controller
                 'ativo'    => $input['ativo'] ? 1 : 0
             ]);
 
+            $this->pusher_lib->trigger('painel', 'mensagens-atualizadas', []);
+
             return respond(statusCode: 200, message: 'Atualizado com sucesso');
         } catch (\Throwable $th) {
             return respond(statusCode: 500, message: $th->getMessage());
@@ -103,6 +107,9 @@ class Mensagens extends CI_Controller
     {
         try {
             $this->Mensagem_model->delete($id);
+
+            $this->pusher_lib->trigger('painel', 'mensagens-atualizadas', []);
+
             return respond(statusCode: 200, message: 'Sucesso!');
         } catch (\Throwable $th) {
             return respond(statusCode: 500, message: $th->getMessage());
