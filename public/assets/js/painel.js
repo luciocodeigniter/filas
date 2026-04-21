@@ -51,12 +51,6 @@ function exibirTelaInicio() {
             atualizarUltimasChamadasPainel();
             iniciarMensagensRotativas();
             iniciarPusher();             // Inicia Pusher após interação do usuário
-
-            setInterval(() => {
-                // atualizarPainel() removido — agora é via Pusher
-                atualizarFilaEspera();
-                atualizarUltimasChamadasPainel();
-            }, 3000);
         });
     });
 }
@@ -73,6 +67,7 @@ function iniciarPusher() {
 
     const channel = pusher.subscribe('painel');
 
+    // Recebe nova chamada
     channel.bind('nova-chamada', function (chamada) {
         console.log('[Pusher] Nova chamada recebida:', chamada);
 
@@ -80,7 +75,7 @@ function iniciarPusher() {
 
         if (isNovaChamada) {
             ultimaChamadaId = String(chamada.id);
-            exibirOverlayChamada(chamada);
+            exibirOverlayChamada(chamada); chamada
             reproduzirSom();
             falarChamada(chamada);
             setTimeout(() => esconderOverlayChamada(), 6000);
@@ -90,9 +85,16 @@ function iniciarPusher() {
         atualizarUltimasChamadasPainel();
     });
 
+    // Recebe fila atualizada
     channel.bind('fila-atualizada', function (chamada) {
         console.log('[Pusher] Fila atualizada:', chamada);
         atualizarFilaEspera();
+    });
+
+    // Recebe chamadas atualizadas
+    channel.bind('chamadas-atualizadas', function () {
+        console.log('[Pusher] Chamadas atualizadas');
+        atualizarUltimasChamadasPainel();
     });
 }
 
@@ -334,7 +336,6 @@ function simularChamada() {
 
             setTimeout(() => {
                 atualizarPainel();
-                atualizarUltimasChamadasPainel();
             }, 500);
         });
     });

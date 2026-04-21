@@ -47,7 +47,10 @@ async function atualizarFila() {
             return;
         }
 
-        atualizarProximoPaciente(senhas[0]);
+        // DEPOIS
+        if (!senhaAtual) {
+            atualizarProximoPaciente(senhas[0]);
+        }
 
         await Promise.all(senhas.map(async (senha, index) => {
             const classificacao = senha.classificacao_risco_id === null

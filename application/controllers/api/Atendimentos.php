@@ -270,7 +270,11 @@ class Atendimentos extends CI_Controller
                 'status'           => 'atendendo',
             ]);
 
-            //! temos que dispara o Pusher aqui para enviar para o painel
+            /**
+             * Não precisa buscar o atendimento atualizado — o frontend só precisa saber 
+             * que a fila mudou e já chama atualizarFilaEspera() que busca os dados. 
+             */
+            $this->pusher_lib->trigger('painel', 'fila-atualizada', []);
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {
@@ -309,7 +313,11 @@ class Atendimentos extends CI_Controller
                 'status'           => 'finalizado',
             ]);
 
-            //! temos que dispara o Pusher aqui para enviar para o painel
+            /**
+             * Não precisa buscar o atendimento atualizado — o frontend só precisa saber 
+             * que a fila mudou e já chama atualizarFilaEspera() que busca os dados. 
+             */
+            $this->pusher_lib->trigger('painel', 'chamadas-atualizadas', []);
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {
