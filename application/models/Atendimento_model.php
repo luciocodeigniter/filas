@@ -15,10 +15,12 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         $this->db->order_by('data_entrada', 'ASC');
         return $this->db
             ->get($this->table)
@@ -38,10 +40,12 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         $this->db->order_by('data_entrada', 'ASC');
         $this->db->limit($limit);
         return $this->db
@@ -64,17 +68,15 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         $this->db->order_by('data_entrada', 'ASC');
         $this->db->limit($limit);
-
         return $this->db
-            // data_chamada tem que ser hoje sem hora YYYY-MM-DD
-            // ->where('DATE(data_chamada)', date('Y-m-d'))
-            // ->where('status', 'chamando') // que foram chamados
             ->get($this->table)
             ->result();
     }
@@ -91,10 +93,12 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         return $this->db->order_by('data_entrada', 'ASC')
             ->limit($limit)
             ->where('status', 'aguardando') //! aguardando triagem
@@ -114,10 +118,12 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
         return $this->db->order_by('data_entrada', 'ASC')
             ->limit($limit)
             ->where('status', 'chamando') //! que foram chamados
@@ -187,13 +193,14 @@ class Atendimento_model extends CI_Model
             'classificacoes_risco.nome as classificacao_nome',
             'classificacoes_risco.cor as classificacao_cor',
             'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
         ]);
 
         $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
         $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
 
         return $this->db
-            // ->where('DATE(data_chamada)', date('Y-m-d'))
             ->where('status', 'chamando') // apenas os que foram chamados
             ->order_by('data_chamada', 'DESC') // mais recente primeiro
             ->limit(1)
