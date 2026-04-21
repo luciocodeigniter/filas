@@ -121,7 +121,9 @@
 		<div class="chamada-overlay-content">
 			<i class="fas fa-bell fa-5x text-white mb-4 animate__animated animate__swing animate__infinite"></i>
 			<h1 class="text-white display-1 fw-bold" id="overlayNumero">A001</h1>
+			<h2 class="text-white" id="overlayNome"></h2> <!-- ← NOVO -->
 			<h2 class="text-white" id="overlayConsultorio">Sala 1</h2>
+			<h2 class="text-white opacity-75" id="overlayTipo"></h2> <!-- ← NOVO -->
 		</div>
 	</div>
 

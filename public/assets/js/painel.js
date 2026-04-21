@@ -74,7 +74,8 @@ function atualizarPainel() {
             ultimaChamadaId = String(chamada.id);
             exibirOverlayChamada(chamada);
             reproduzirSom();
-            setTimeout(() => esconderOverlayChamada(), CONFIG.tempoOverlayChamada);
+            falarChamada(chamada);  // ← ADICIONE ESTA LINHA
+            setTimeout(() => esconderOverlayChamada(), 6000);
         }
 
         exibirChamadaAtual(chamada);
@@ -113,7 +114,9 @@ function exibirMensagemAguardando() {
 
 function exibirOverlayChamada(chamada) {
     $('#overlayNumero').text(chamada.numero_senha);
+    $('#overlayNome').text(chamada.nome_paciente.toUpperCase());
     $('#overlayConsultorio').text(chamada.sala_nome.toUpperCase());
+    $('#overlayTipo').text('ATENDIMENTO ' + chamada.tipo_atendimento_nome.toUpperCase());
     $('#chamadaOverlay').addClass('active');
 }
 
@@ -322,5 +325,38 @@ document.addEventListener('visibilitychange', async () => {
         await manterTelaLigada();
     }
 });
+
+// ============= FALA DA CHAMADA (TEXT-TO-SPEECH) =============
+
+function falarChamada(chamada) {
+    if (!window.speechSynthesis) {
+        console.warn('[Painel] SpeechSynthesis não suportado neste navegador.');
+        return;
+    }
+
+    // Cancela qualquer fala em andamento
+    window.speechSynthesis.cancel();
+
+    const senha = chamada.numero_senha || '';
+    const nome = chamada.nome_paciente || '';
+    const sala = chamada.sala_nome || '';
+    const tipo = chamada.tipo_atendimento_nome || '';
+
+    // Separa as letras da senha para falar corretamente: "S004" → "S, 0, 0, 4"
+    const senhaFalada = senha.split('').join(', ');
+
+    const texto = `Atenção! Senha ${senhaFalada}. ${nome}, dirija-se à ${sala}. Atendimento ${tipo}.`;
+
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 0.95;  // Levemente mais lento para clareza
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    // Aguarda o som tocar antes de falar (evita sobreposição)
+    setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+    }, 3000); // Ajuste conforme a duração do seu som
+}
 
 console.log('[Painel] Painel de TV carregado. Aguardando interação do usuário...');
