@@ -221,7 +221,11 @@ class Atendimentos extends CI_Controller
                 'sala_id'         => (int) $sala->id
             ]);
 
-            //! temos que dispara o Pusher aqui para enviar para o painel
+            // Busca o atendimento atualizado com todos os dados para o painel
+            $atendimentoAtualizado = $this->Atendimento_model->getByIdAsArray($atendimentoId);
+
+            // Envia o evento para o painel com os dados do atendimento chamado
+            $this->pusher_lib->trigger('painel', 'nova-chamada', $atendimentoAtualizado);
 
             return respond(statusCode: 200, message: 'Sucesso');
         } catch (\Throwable $th) {

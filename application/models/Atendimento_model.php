@@ -133,7 +133,34 @@ class Atendimento_model extends CI_Model
 
     public function getById($id)
     {
-        return $this->db->where('id', $id)->get($this->table)->row();
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
+        return $this->db->where('atendimentos.id', $id)->get($this->table)->row();
+    }
+
+    public function getByIdAsArray($id)
+    {
+        $this->db->select([
+            'atendimentos.*',
+            'classificacoes_risco.nome as classificacao_nome',
+            'classificacoes_risco.cor as classificacao_cor',
+            'salas.nome as sala_nome',
+            'tipos_atendimento.nome as tipo_atendimento_nome'
+        ]);
+
+        $this->db->join('classificacoes_risco', 'classificacoes_risco.id = atendimentos.classificacao_risco_id', 'left');
+        $this->db->join('salas', 'salas.id = atendimentos.sala_id', 'left');
+        $this->db->join('tipos_atendimento', 'tipos_atendimento.id = atendimentos.tipo_atendimento_id', 'left');
+        return $this->db->where('atendimentos.id', $id)->get($this->table)->row_array();
     }
 
     public function insert($data)
