@@ -41,12 +41,12 @@
 						<h2 class="mb-0"><i class="fas fa-bell"></i> CHAMANDO AGORA</h2>
 					</div>
 					<div class="card-body text-center p-5">
-						<div class="senha-chamada-display mb-4">
+						<div class="d-none senha-chamada-display mb-4">
 							<h1 class="display-1 fw-bold text-primary animate__animated" id="senhaAtual">
 								---
 							</h1>
 						</div>
-						<h2 class="nome-paciente-display mb-4" id="nomeAtual">
+						<h2 class="nome-paciente-display mb-4" id="nomeAtual" style="font-size: 100px !important;">
 							Aguardando próxima chamada...
 						</h2>
 						<div class="classificacao-display mb-4">
@@ -54,7 +54,7 @@
 						</div>
 						<div class="consultorio-display">
 							<h3 class="text-muted mb-2">Dirija-se à</h3>
-							<div class="consultorio-numero">
+							<div class="consultorio-numero" style="background: none !important;">
 								<h1 class="display-3 text-success fw-bold" id="consultorioAtual">
 									<i class="fas fa-door-open"></i> ---
 								</h1>
@@ -62,8 +62,8 @@
 						</div>
 
 						<div class="guiche-display mt-3" id="guicheDisplay" style="display:none;">
-							<h3 class="text-muted mb-2">Guichê</h3>
-							<h1 class="display-3 text-warning fw-bold" id="guicheAtual">---</h1>
+							<h3 class="text-muted mb-2" style="font-size: 100px !important;">Guichê</h3>
+							<h1 class="display-3 text-warning fw-bold" id="guicheAtual" style="font-size: 100px !important;">---</h1>
 						</div>
 					</div>
 				</div>

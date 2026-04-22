@@ -260,6 +260,7 @@ function atualizarUltimasChamadasPainel() {
                             ${chamada.classificacao_nome}
                         </span>
                     </div>
+                    <h4 class="fw-bold mt-1 mb-0">${chamada.nome_paciente.toUpperCase()}</h4>  <!-- ← NOVO -->
                     <small class="text-muted">${formatarHora(chamada.data_chamada)}</small>
                 </div>
             `);
