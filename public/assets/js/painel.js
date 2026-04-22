@@ -81,7 +81,7 @@ function iniciarPusher() {
             exibirOverlayChamada(chamada); chamada
             reproduzirSom();
             falarChamada(chamada);
-            setTimeout(() => esconderOverlayChamada(), 6000);
+            setTimeout(() => esconderOverlayChamada(), 10000);
         }
 
         exibirChamadaAtual(chamada);
@@ -123,7 +123,7 @@ function atualizarPainel() {
             exibirOverlayChamada(chamada);
             reproduzirSom();
             falarChamada(chamada);
-            setTimeout(() => esconderOverlayChamada(), 6000);
+            setTimeout(() => esconderOverlayChamada(), 10000);
         }
 
         exibirChamadaAtual(chamada);
