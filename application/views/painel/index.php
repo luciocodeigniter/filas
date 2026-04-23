@@ -76,7 +76,7 @@
 					<div class="card-header bg-warning text-dark">
 						<h5 class="mb-0"><i class="fas fa-hourglass-half"></i> AGUARDANDO ATENDIMENTO</h5>
 					</div>
-					<div class="card-body" style="max-height: 300px; overflow-y: auto;">
+					<div class="card-body" style="max-height: 300px; overflow-y: auto; font-size: 28px;">
 						<table class="table table-sm">
 							<thead>
 								<tr>
@@ -97,7 +97,7 @@
 					<div class="card-header bg-info text-white">
 						<h6 class="mb-0"><i class="fas fa-history"></i> ÚLTIMAS CHAMADAS</h6>
 					</div>
-					<div class="card-body p-2" style="max-height: 350px; overflow-y: auto;">
+					<div class="card-body p-2" style="max-height: 380px; overflow-y: auto;">
 						<div id="ultimasChamadas">
 							<!-- Será preenchido via JavaScript -->
 						</div>

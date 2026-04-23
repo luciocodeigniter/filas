@@ -326,4 +326,21 @@ class Atendimentos extends CI_Controller
             return respond(statusCode: 500, message: $th->getMessage());
         }
     }
+
+    /**
+     * GET /api/atendimentos/rechamar/{id}
+     * 
+     * Chama novamente o atendimento
+     */
+    public function rechamar($id)
+    {
+        try {
+            $data = $this->Atendimento_model->getByIdAsArray($id);
+
+            $this->pusher_lib->trigger('painel', 'rechamada', $data);
+            return respond(statusCode: 200, data: $data);
+        } catch (Exception $e) {
+            return respond(statusCode: 500, message: $e->getMessage());
+        }
+    }
 }

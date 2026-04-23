@@ -105,6 +105,16 @@ function iniciarPusher() {
         console.log('[Pusher] Mensagens atualizadas');
         iniciarMensagensRotativas();
     });
+
+    // recebe rechamada
+    channel.bind('rechamada', function (chamada) {
+        console.log('[Pusher] Rechamada recebida:', chamada);
+        exibirOverlayChamada(chamada);
+        reproduzirSom();
+        falarChamada(chamada);
+        setTimeout(() => esconderOverlayChamada(), 8000);
+        exibirChamadaAtual(chamada);
+    });
 }
 
 // ============= ATUALIZAR PAINEL PRINCIPAL =============
@@ -248,7 +258,7 @@ function atualizarUltimasChamadasPainel() {
             if (!chamada.numero_senha) return;
 
             const item = $(`
-                <div class="list-group-item ${index === 0 ? 'list-group-item-primary' : ''}">
+                <div class="list-group-item ${index === 0 ? 'list-group-item-primary' : ''}" style="font-size: 30px !important">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="flex-grow-1">
                             <strong>${chamada.numero_senha}</strong>

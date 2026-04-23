@@ -12,13 +12,6 @@ $(document).ready(function () {
     atualizarFila();
     atualizarHistorico();
     atualizarEstatisticasConsultorio();
-
-    //! aqui faremos o com pusher
-    // setInterval(() => {
-    //     atualizarFila();
-    //     atualizarHistorico();
-    //     atualizarEstatisticasConsultorio();
-    // }, CONFIG.atualizacaoAutomatica);
 });
 
 // ============= ATUALIZAR FILA DE ESPERA =============
@@ -179,6 +172,18 @@ async function chamarPacienteEspecifico(senhaId) {
     }
 }
 
+// ============= RECHAMAR PACIENTE =============
+
+async function rechamarPaciente(atendimentoId) {
+    try {
+        await apiRequest(`/api/atendimentos/rechamar/${atendimentoId}`);
+        exibirNotificacao('Paciente chamado novamente!', 'info');
+    } catch (error) {
+        console.error('Erro ao rechamar paciente:', error);
+        exibirNotificacao('Erro ao rechamar paciente', 'danger');
+    }
+}
+
 // ============= INICIAR ATENDIMENTO =============
 
 async function iniciarAtendimento() {
@@ -273,9 +278,18 @@ async function atualizarHistorico() {
                                 <span class="ms-2">${formatarHora(chamada.data_chamada)}</span>
                             </small>
                         </div>
-                        <span class="badge ${getClasseClassificacao(chamada.classificacao_cor)}">
-                            ${chamada.classificacao_nome}
-                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${getClasseClassificacao(chamada.classificacao_cor)}">
+                                ${chamada.classificacao_nome}
+                            </span>
+                            <button 
+                                class="btn btn-sm btn-outline-warning" 
+                                onclick="rechamarPaciente(${chamada.id})"
+                                ${senhaEmAtendimento ? 'disabled' : ''}
+                                title="Chamar novamente">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `);
